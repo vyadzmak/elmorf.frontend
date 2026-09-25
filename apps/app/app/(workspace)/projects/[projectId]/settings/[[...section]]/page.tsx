@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
+import { WorkspaceRouteSkeleton } from "@/components/shell/pending-section";
 import { WorkspacePage } from "@/components/shell/workspace-page";
 import { ProjectSettings } from "@/features/settings/project-settings";
 import { SettingsFrame } from "@/features/settings/settings-frame";
@@ -17,7 +18,7 @@ export default async function ProjectSettingsPage({
   return (
     <WorkspacePage title={shell("navSettings")}>
       <SettingsFrame active={active}>
-        <Suspense fallback={null}>
+        <Suspense fallback={<WorkspaceRouteSkeleton />}>
           <ProjectSettings projectId={projectId} section={active} />
         </Suspense>
       </SettingsFrame>

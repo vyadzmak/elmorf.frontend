@@ -108,17 +108,20 @@ export function TryWorkbench({
   title,
   intro,
   signupHref,
+  initialObject,
 }: {
   title: string;
   intro: string;
   signupHref: string;
+  initialObject?: string;
 }) {
   const t = useTranslations("Try");
   const ready = useTryMockReady();
   const api = useTryApiClient();
   const queryClient = useQueryClient();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [queryText, setQueryText] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(initialObject ?? "obj_inv_2041");
+  const [queryText, setQueryText] = useState(t("sampleQuery"));
+  const [engaged, setEngaged] = useState(false);
   const [queryId, setQueryId] = useState<string | null>(null);
   const [queryError, setQueryError] = useState<string | null>(null);
   const sources = useQuery({
@@ -175,6 +178,7 @@ export function TryWorkbench({
 
     setQueryError(null);
     setQueryText(trimmed);
+    setEngaged(true);
     run.mutate(trimmed);
   }
 
@@ -197,12 +201,17 @@ export function TryWorkbench({
         </p>
       ) : null}
 
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+      <div className="order-2 flex flex-col gap-8 lg:order-1">
       {sources.isSuccess ? (
         <section className="flex flex-col gap-3">
           <h2 className="text-lg font-medium">{t("sourcesTitle")}</h2>
-          <ul className="flex flex-col gap-1 text-sm">
+          <ul className="flex flex-col gap-2 text-sm">
             {sources.data.map((source) => (
-              <li key={source.id}>{source.name}</li>
+              <li key={source.id} className="flex items-baseline justify-between gap-3">
+                <span className="truncate font-mono text-xs">{source.name}</span>
+                <span className="shrink-0 text-xs uppercase text-muted-foreground">{source.kind}</span>
+              </li>
             ))}
           </ul>
         </section>
@@ -221,16 +230,56 @@ export function TryWorkbench({
           </p>
         ) : null}
         {modelMissing ? <p className="text-sm text-muted-foreground">{t("modelMissing")}</p> : null}
+        <p className="text-sm text-muted-foreground">{t("alreadyCompiled")}</p>
       </section>
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium">{t("queryTitle")}</h2>
+        <form
+          className="flex flex-col gap-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            submitQuery(queryText);
+          }}
+        >
+          <label className="sr-only" htmlFor="try-query">
+            {t("queryTitle")}
+          </label>
+          <Input
+            id="try-query"
+            value={queryText}
+            placeholder={t("queryPlaceholder")}
+            onChange={(event) => {
+              setQueryText(event.target.value);
+            }}
+          />
+          <Button type="submit" disabled={!ready || run.isPending} className="w-fit">
+            {t("queryRun")}
+          </Button>
+        </form>
+        <p className="text-xs text-muted-foreground">
+          {t("sampleHint")} {t("sampleMeaning")}
+        </p>
+        {queryError ? (
+          <p className="text-sm text-destructive" role="alert">
+            {queryError}
+          </p>
+        ) : null}
+        {execution.data ? <QueryResult execution={execution.data} /> : null}
+      </section>
+      </div>
 
       {graph.isSuccess ? (
+        <div className="order-1 flex flex-col gap-4 lg:sticky lg:top-20 lg:order-2">
         <section className="flex flex-col gap-4">
           <h2 className="text-lg font-medium">{t("morphologyTitle")}</h2>
           <TryGraph
             graph={graph.data}
             label={t("graphLabel")}
             selectedNodeId={selectedId}
-            onSelectNode={setSelectedId}
+            onSelectNode={(id) => {
+              setSelectedId(id);
+              setEngaged(true);
+            }}
           />
           <div className="flex flex-col gap-2">
             <h3 className="text-sm font-medium">{t("objectsTitle")}</h3>
@@ -244,6 +293,7 @@ export function TryWorkbench({
                     aria-pressed={node.id === selectedId}
                     onClick={() => {
                       setSelectedId(node.id);
+                      setEngaged(true);
                     }}
                   >
                     {node.label}
@@ -262,61 +312,22 @@ export function TryWorkbench({
             ) : null}
             {object.isSuccess
               ? object.data.evidence.map((item) => (
-                  <blockquote key={item.id} className="border-l border-border pl-3 text-sm">
-                    <p>{item.excerpt}</p>
-                    <p className="mt-1 text-muted-foreground">{item.label}</p>
-                  </blockquote>
+                  <article key={item.id} className="rounded-lg border border-border bg-[var(--elmorf-surface-1)] p-3 text-sm">
+                    <p className="font-medium">{object.data.label}</p>
+                    <p className="mt-1 font-mono text-xs text-muted-foreground">{item.label}</p>
+                    <p className="mt-2 font-mono text-xs">{item.excerpt}</p>
+                  </article>
                 ))
               : null}
           </div>
         </section>
+        </div>
       ) : null}
+      </div>
 
-      <section className="flex max-w-2xl flex-col gap-3">
-        <h2 className="text-lg font-medium">{t("queryTitle")}</h2>
-        <form
-          className="flex flex-col gap-3 sm:flex-row"
-          onSubmit={(event) => {
-            event.preventDefault();
-            submitQuery(queryText);
-          }}
-        >
-          <label className="sr-only" htmlFor="try-query">
-            {t("queryTitle")}
-          </label>
-          <Input
-            id="try-query"
-            value={queryText}
-            placeholder={t("queryPlaceholder")}
-            onChange={(event) => {
-              setQueryText(event.target.value);
-            }}
-          />
-          <Button type="submit" disabled={!ready || run.isPending}>
-            {t("queryRun")}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={!ready || run.isPending}
-            onClick={() => {
-              submitQuery(t("sampleQuery"));
-            }}
-          >
-            {t("querySample")}
-          </Button>
-        </form>
-        {queryError ? (
-          <p className="text-sm text-destructive" role="alert">
-            {queryError}
-          </p>
-        ) : null}
-        {execution.data ? <QueryResult execution={execution.data} /> : null}
-      </section>
-
-      <aside className="flex max-w-xl flex-col gap-3 border-t border-border pt-8">
-        <h2 className="text-lg font-medium">{t("ctaTitle")}</h2>
-        <p className="text-sm text-muted-foreground">{t("ctaBody")}</p>
+      <aside className="flex max-w-xl flex-col gap-3 rounded-lg border border-border bg-[var(--elmorf-surface-1)] p-4">
+        <h2 className="text-sm font-medium">{engaged ? t("ctaTitleEngaged") : t("ctaTitle")}</h2>
+        <p className="text-sm text-muted-foreground">{t("ctaBody")} {t("opensWorkspace")}</p>
         <Button asChild className="w-fit">
           <a href={signupHref}>{t("createAccount")}</a>
         </Button>

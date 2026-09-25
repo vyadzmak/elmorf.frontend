@@ -11,13 +11,13 @@ export function ProjectHealth({
   rows: HealthRow[];
 }) {
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-sm font-medium">{title}</h2>
-      <dl className="flex flex-col divide-y divide-border rounded-lg border border-border">
+    <section className="flex flex-col rounded-xl border border-border bg-[var(--elmorf-surface-1)] p-5">
+      <h2 className="text-lg font-medium tracking-tight">{title}</h2>
+      <dl className="mt-5 flex flex-col divide-y divide-border">
         {rows.map((row) => (
-          <div key={row.label} className="flex items-center justify-between gap-4 px-4 py-2.5">
+          <div key={row.label} className="flex items-center justify-between gap-4 py-3">
             <dt className="text-sm text-muted-foreground">{row.label}</dt>
-            <dd className="text-sm">{row.value}</dd>
+            <dd className="text-sm font-medium">{row.value}</dd>
           </div>
         ))}
       </dl>

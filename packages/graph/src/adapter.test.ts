@@ -21,6 +21,7 @@ const colors: GraphColors = {
   dimmed: "#555555",
   label: "#eeeeee",
   conflict: "#a94f40",
+  types: {},
 };
 
 function sample(): GraphResponse {

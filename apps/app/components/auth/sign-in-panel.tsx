@@ -63,6 +63,10 @@ export function SignInPanel() {
           form.setError("password", { message: t("passwordRequired") });
         }
       }
+      const first = parsed.error.issues[0]?.path[0];
+      if (first === "email" || first === "password") {
+        form.setFocus(first);
+      }
       return;
     }
 
@@ -75,7 +79,9 @@ export function SignInPanel() {
 
   return (
     <AuthFrame title={t("signInTitle")} description={t("signInDescription")}>
-      {signedIn ? null : (
+      {signedIn ? (
+        <p className="text-sm text-muted-foreground">{t("alreadySignedIn")}</p>
+      ) : (
         <form
           className="flex flex-col gap-4"
           noValidate
@@ -89,30 +95,31 @@ export function SignInPanel() {
             {...(emailError ? { error: emailError } : {})}
             {...form.register("email")}
           />
-          <AuthField
-            id="password"
-            label={t("password")}
-            type="password"
-            autoComplete="current-password"
-            {...(passwordError ? { error: passwordError } : {})}
-            {...form.register("password")}
-          />
-          {rootError ? (
-            <p className="text-sm text-destructive" role="alert">
-              {rootError}
-            </p>
-          ) : null}
-          <Button type="submit" disabled={!ready || signIn.isPending}>
-            {signInLabel}
-          </Button>
-          <div className="flex flex-col gap-2 text-sm">
-            <Link href="/forgot-password" className="text-muted-foreground underline-offset-4 hover:underline">
+          <div className="flex flex-col gap-1.5">
+            <Link
+              href="/forgot-password"
+              className="self-end text-xs text-muted-foreground underline-offset-4 hover:underline"
+            >
               {t("forgotPassword")}
             </Link>
-            <Link href="/signup" className="underline-offset-4 hover:underline">
-              {t("createAccount")}
-            </Link>
+            <AuthField
+              id="password"
+              label={t("password")}
+              type="password"
+              autoComplete="current-password"
+              {...(passwordError ? { error: passwordError } : {})}
+              {...form.register("password")}
+            />
           </div>
+          <p className="min-h-5 text-sm text-destructive" role="alert">
+            {rootError ?? ""}
+          </p>
+          <Button type="submit" className="h-10" disabled={!ready || signIn.isPending}>
+            {signInLabel}
+          </Button>
+          <Link href="/signup" className="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+            {t("createAccount")}
+          </Link>
         </form>
       )}
     </AuthFrame>

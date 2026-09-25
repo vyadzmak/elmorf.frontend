@@ -151,7 +151,9 @@ export function ModelTable<T extends { id: string }>({
                   aria-pressed={row.id === selectedId}
                   className={cn(
                     "absolute start-0 grid w-full items-center gap-3 border-b border-border px-3 text-start text-sm",
-                    row.id === selectedId ? "bg-accent" : "hover:bg-muted",
+                    row.id === selectedId
+                      ? "border-s-2 border-s-primary bg-muted/80"
+                      : "border-s-2 border-s-transparent hover:bg-muted",
                   )}
                   style={{
                     height: item.size,

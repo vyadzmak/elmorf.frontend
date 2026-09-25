@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { WorkspaceRouteSkeleton } from "@/components/shell/pending-section";
 import { CompileWorkbench } from "@/features/compile/compile-workbench";
 
 export default async function CompilePage({
@@ -8,7 +9,7 @@ export default async function CompilePage({
 }) {
   const { projectId } = await params;
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<WorkspaceRouteSkeleton />}>
       <CompileWorkbench projectId={projectId} />
     </Suspense>
   );

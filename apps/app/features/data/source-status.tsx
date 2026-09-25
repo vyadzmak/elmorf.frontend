@@ -1,6 +1,7 @@
 "use client";
 
 import type { Source, SourceKind, SourceProcessing } from "@elmorf/domain";
+import { cn } from "@elmorf/ui/lib/utils";
 import { useFormatter, useTranslations } from "next-intl";
 import { useMemo } from "react";
 
@@ -86,9 +87,19 @@ export function SourceStatusText({ processing }: { processing: SourceProcessing 
     label = t("statusReady");
   }
 
+  const dot =
+    processing.status === "failed"
+      ? "bg-[var(--elmorf-error)]"
+      : processing.status === "ready"
+        ? "bg-[var(--elmorf-success)]"
+        : processing.status === "cancelled"
+          ? "bg-muted-foreground"
+          : "bg-[var(--elmorf-warning)]";
+
   return (
-    <span className={processing.status === "failed" ? "text-destructive" : undefined}>
-      {label}
+    <span className="inline-flex items-center gap-2">
+      <span className={cn("size-1.5 shrink-0 rounded-full", dot)} />
+      <span className={processing.status === "failed" ? "text-destructive" : undefined}>{label}</span>
     </span>
   );
 }

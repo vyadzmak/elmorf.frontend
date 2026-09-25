@@ -44,6 +44,7 @@ export function SourceInspector({
     enabled: ready,
   });
   const source = sourcesQuery.data?.find((item) => item.id === sourceId);
+  const [tab, setTab] = useState<"overview" | "processing" | "metadata" | "errors">("overview");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [actionError, setActionError] = useState(false);
   const refresh = () => queryClient.invalidateQueries({ queryKey: sourceKeys.list(projectId) });
@@ -86,10 +87,34 @@ export function SourceInspector({
     source.processing.status === "processing";
   const failed = source.processing.status === "failed" ? source.processing.error : null;
 
+  const visibleTab = tab === "errors" && !failed ? "overview" : tab;
+
   return (
     <div className="flex flex-col gap-5 px-4 py-4">
+      <div className="flex flex-wrap gap-1">
+        {(
+          [
+            ["overview", t("overview")],
+            ["processing", t("processingTitle")],
+            ["metadata", t("metadata")],
+            ...(failed ? [["errors", t("errors")] as const] : []),
+          ] as const
+        ).map(([id, label]) => (
+          <Button
+            key={id}
+            type="button"
+            size="sm"
+            variant={visibleTab === id ? "secondary" : "ghost"}
+            onClick={() => {
+              setTab(id);
+            }}
+          >
+            {label}
+          </Button>
+        ))}
+      </div>
+      {visibleTab === "overview" ? (
       <section className="flex flex-col gap-2">
-        <h3 className="text-xs font-medium text-muted-foreground">{t("overview")}</h3>
         <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
           <dt className="text-muted-foreground">{t("columnType")}</dt>
           <dd>{sourceKindLabel(source.kind, t)}</dd>
@@ -103,12 +128,17 @@ export function SourceInspector({
           </dd>
         </dl>
       </section>
+      ) : null}
+      {visibleTab === "processing" ? (
       <section className="flex flex-col gap-2">
-        <h3 className="text-xs font-medium text-muted-foreground">{t("processingTitle")}</h3>
         {source.processing.status === "ready" ? (
-          <p className="text-sm">
-            {t("finished")} · {format.date(source.processing.completedAt)}
-          </p>
+          <ol className="grid gap-1 text-sm">
+            <li className="text-muted-foreground">{t("timelineQueued")}</li>
+            <li className="text-muted-foreground">{t("timelineUploaded")}</li>
+            <li>
+              {t("finished")} · {format.date(source.processing.completedAt)}
+            </li>
+          </ol>
         ) : null}
         {source.processing.status === "cancelled" ? (
           <p className="text-sm">
@@ -131,14 +161,16 @@ export function SourceInspector({
           </Button>
         ) : null}
       </section>
+      ) : null}
+      {visibleTab === "metadata" ? (
       <section className="flex flex-col gap-2">
-        <h3 className="text-xs font-medium text-muted-foreground">{t("metadata")}</h3>
         <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
           <dt className="text-muted-foreground">{t("idLabel")}</dt>
           <dd className="truncate font-mono text-xs">{source.id}</dd>
         </dl>
       </section>
-      {failed ? (
+      ) : null}
+      {visibleTab === "errors" && failed ? (
         <section className="flex flex-col gap-2">
           <h3 className="text-xs font-medium text-muted-foreground">{t("errors")}</h3>
           <p className="text-sm text-destructive">

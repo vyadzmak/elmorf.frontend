@@ -9,11 +9,12 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@elmorf/ui/components/ui/sidebar";
+import { Skeleton } from "@elmorf/ui/components/ui/skeleton";
 import { TooltipProvider } from "@elmorf/ui/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import { useMockReady } from "@/components/app-providers";
 import { AppSidebar } from "@/components/shell/app-sidebar";
 import { AppTopbar } from "@/components/shell/app-topbar";
@@ -29,7 +30,6 @@ import { useApiClient } from "@/lib/use-api";
 import { projectIdFromPath, sectionFromPath } from "@/lib/workspace-path";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const t = useTranslations("Shell");
   const missing = useTranslations("Foundation");
   const pathname = usePathname();
   const router = useRouter();
@@ -38,12 +38,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const projectId = projectIdFromPath(pathname);
   const section = sectionFromPath(pathname);
   const [inspector, setInspector] = useState<InspectorPanel | null>(null);
+  const inspectorOpen = useRef(false);
+  const returnFocus = useRef<HTMLElement | null>(null);
   const [commandOpen, setCommandOpen] = useState(false);
   const openInspector = useCallback((panel: InspectorPanel) => {
+    if (!inspectorOpen.current) {
+      const active = document.activeElement;
+      if (active instanceof HTMLElement && active !== document.body) {
+        returnFocus.current = active;
+      }
+    }
+    inspectorOpen.current = true;
     setInspector(panel);
   }, []);
   const closeInspector = useCallback(() => {
+    inspectorOpen.current = false;
     setInspector(null);
+    const target = returnFocus.current;
+    returnFocus.current = null;
+    if (target) {
+      window.requestAnimationFrame(() => {
+        target.focus();
+      });
+    }
   }, []);
   const sessionQuery = useQuery({
     ...sessionOptions(api),
@@ -98,12 +115,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             projectId={projectId}
             projectName={projectQuery.data?.name ?? null}
           />
-          <SidebarInset className="min-h-0 overflow-hidden">
+          <SidebarInset className="min-h-0 overflow-hidden bg-[var(--elmorf-surface-0)]">
             <AppTopbar projectId={projectId} session={sessionQuery.data ?? null} />
             <div className="min-h-0 flex-1">
               <InspectorHost>
                 {waiting ? (
-                  <WorkspacePage title={t("loading")} />
+                  <div className="flex flex-col gap-4 p-6 lg:p-8">
+                    <Skeleton className="h-8 w-40" />
+                    <Skeleton className="h-64 w-full" />
+                  </div>
                 ) : projectMissing ? (
                   <WorkspacePage title={missing("notFoundTitle")}>
                     <p className="text-sm text-muted-foreground">

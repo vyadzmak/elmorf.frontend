@@ -79,6 +79,11 @@ export function createGraphologyGraph(
     });
   }
 
+  graph.forEachNode((id) => {
+    const degree = graph.degree(id);
+    graph.setNodeAttribute(id, "size", 8 + Math.min(degree, 5));
+  });
+
   if (options?.layout !== false && graph.order > 0) {
     circular.assign(graph);
   }

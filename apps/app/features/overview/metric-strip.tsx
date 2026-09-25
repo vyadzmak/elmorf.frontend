@@ -9,18 +9,22 @@ export interface MetricItem {
 
 export function MetricStrip({ items }: { items: MetricItem[] }) {
   return (
-    <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-4">
+    <div className="grid grid-cols-2 gap-y-5 sm:grid-cols-4">
       {items.map((item) => (
         <Link
           key={item.label}
           href={item.href}
           className={cn(
-            "flex flex-col gap-1 bg-background px-4 py-3",
-            "hover:bg-muted/60",
+            "flex min-w-0 flex-col gap-1 border-s border-border px-4 first:border-s-0 first:ps-0",
+            "group focus-visible:outline-none",
           )}
         >
-          <span className="text-xs text-muted-foreground">{item.label}</span>
-          <span className="text-lg font-medium tabular-nums">{item.value}</span>
+          <span className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
+            {item.label}
+          </span>
+          <span className="text-xl leading-tight font-medium tabular-nums tracking-tight transition-colors group-hover:text-primary sm:text-3xl">
+            {item.value}
+          </span>
         </Link>
       ))}
     </div>

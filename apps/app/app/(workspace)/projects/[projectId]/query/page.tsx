@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { WorkspaceRouteSkeleton } from "@/components/shell/pending-section";
 import { QueryWorkbench } from "@/features/query/query-workbench";
 
 export default async function QueryPage({
@@ -8,7 +9,7 @@ export default async function QueryPage({
 }) {
   const { projectId } = await params;
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<WorkspaceRouteSkeleton />}>
       <QueryWorkbench projectId={projectId} />
     </Suspense>
   );

@@ -12,7 +12,7 @@ import {
 import { Button } from "@elmorf/ui/components/ui/button";
 import { Skeleton } from "@elmorf/ui/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useNow, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useMockReady } from "@/components/app-providers";
 import { MetricStrip } from "@/features/overview/metric-strip";
@@ -27,21 +27,12 @@ const emptySources: Source[] = [];
 const emptyModels: ModelSummary[] = [];
 const emptyQueries: QueryExecution[] = [];
 
-const sourceStatusKey = {
-  queued: "statusQueued",
-  uploading: "statusUploading",
-  processing: "statusProcessing",
-  ready: "statusReady",
-  failed: "statusFailed",
-  cancelled: "statusCancelled",
-} as const;
-
 export function OverviewPage({ projectId }: { projectId: string }) {
   const t = useTranslations("Overview");
   const data = useTranslations("Data");
   const compile = useTranslations("Compile");
-  const queryText = useTranslations("Query");
   const format = useFormatter();
+  const clock = useNow({ updateInterval: 60_000 });
   const ready = useMockReady();
   const api = useApiClient();
   const projectQuery = useQuery({
@@ -100,36 +91,60 @@ export function OverviewPage({ projectId }: { projectId: string }) {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <p className="text-sm text-muted-foreground">{project.name}</p>
-        <p className="text-sm">
-          {model ? t("modelVersion", { version: model.version }) : t("noModel")}
-        </p>
-      </div>
-      <MetricStrip
-        items={[
-          {
-            label: compile("sources"),
-            value: format.number(sources.length),
-            href: sectionHref(projectId, "data"),
-          },
-          {
-            label: compile("objects"),
-            value: format.number(model?.objectCount ?? 0),
-            href: sectionHref(projectId, "morphology"),
-          },
-          {
-            label: compile("relations"),
-            value: format.number(model?.relationCount ?? 0),
-            href: sectionHref(projectId, "morphology"),
-          },
-          {
-            label: compile("conflicts"),
-            value: format.number(model?.conflictCount ?? 0),
-            href: `${sectionHref(projectId, "morphology")}?conflict=1`,
-          },
-        ]}
-      />
+      <section className="rounded-xl border border-border bg-[var(--elmorf-surface-1)] p-5 sm:p-6">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              {t("healthModel")}
+            </p>
+            <h2 className="mt-2 text-2xl font-medium tracking-[-0.025em]">
+              {model ? t("modelVersion", { version: model.version }) : t("noModel")}
+            </h2>
+            {models.length === 1 ? (
+              <p className="mt-2 text-sm text-muted-foreground">
+                {t("singleVersion", { version: models[0]?.version ?? "" })}
+              </p>
+            ) : null}
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button asChild variant="outline">
+              <Link href={sectionHref(projectId, "morphology")}>{t("openMorphology")}</Link>
+            </Button>
+            <Button asChild>
+              <Link href={sectionHref(projectId, "query")}>{t("ask")}</Link>
+            </Button>
+          </div>
+        </div>
+        <div className="mt-6 border-t border-border pt-5">
+          <MetricStrip
+            items={[
+              {
+                label: compile("sources"),
+                value: format.number(sources.length),
+                href: sectionHref(projectId, "data"),
+              },
+              {
+                label: compile("objects"),
+                value: format.number(model?.objectCount ?? 0),
+                href: sectionHref(projectId, "morphology"),
+              },
+              {
+                label: compile("relations"),
+                value: format.number(model?.relationCount ?? 0),
+                href: sectionHref(projectId, "morphology"),
+              },
+              {
+                label: compile("conflicts"),
+                value:
+                  (model?.conflictCount ?? 0) === 0
+                    ? t("conflictsNone")
+                    : format.number(model?.conflictCount ?? 0),
+                href: `${sectionHref(projectId, "morphology")}?conflict=1`,
+              },
+            ]}
+          />
+        </div>
+      </section>
       {isEmpty ? (
         <div className="flex flex-col gap-3 rounded-lg border border-border px-4 py-6">
           <h2 className="text-sm font-medium">{t("emptyTitle")}</h2>
@@ -141,7 +156,7 @@ export function OverviewPage({ projectId }: { projectId: string }) {
           ) : null}
         </div>
       ) : null}
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         <ProjectHealth
           title={t("healthTitle")}
           rows={[
@@ -152,7 +167,9 @@ export function OverviewPage({ projectId }: { projectId: string }) {
             },
             {
               label: t("healthModel"),
-              value: model ? model.version : t("noModel"),
+              value: model
+                ? format.dateTime(new Date(model.createdAt), { dateStyle: "medium" })
+                : t("noModel"),
             },
           ]}
         />
@@ -188,7 +205,7 @@ export function OverviewPage({ projectId }: { projectId: string }) {
           />
         ) : null}
       </div>
-      {models.length > 0 ? (
+      {models.length > 1 ? (
         <section className="flex flex-col gap-3">
           <h2 className="text-sm font-medium">{t("versionsTitle")}</h2>
           <ul className="flex flex-col gap-2">
@@ -227,21 +244,11 @@ export function OverviewPage({ projectId }: { projectId: string }) {
           sources,
           compilation,
           queries,
+          fileMark: t("activityFile"),
+          compileMark: t("activityCompile"),
+          queryMark: t("activityQuery"),
           compilationTitle: t("healthCompilation"),
-          sourceStatus: (source) => data(sourceStatusKey[source.processing.status]),
-          compilationStatus: (item) => compilationLabel(t, item),
-          queryStatus: (item) =>
-            queryText(
-              item.state.status === "queued"
-                ? "statusQueued"
-                : item.state.status === "running"
-                  ? "statusRunning"
-                  : item.state.status === "completed"
-                    ? "statusCompleted"
-                    : item.state.status === "failed"
-                      ? "statusFailed"
-                      : "statusCancelled",
-            ),
+          when: (value) => format.relativeTime(new Date(value), { now: clock }),
         })}
       />
     </div>
@@ -275,19 +282,21 @@ function activityItems({
   sources,
   compilation,
   queries,
+  fileMark,
+  compileMark,
+  queryMark,
   compilationTitle,
-  sourceStatus,
-  compilationStatus,
-  queryStatus,
+  when,
 }: {
   projectId: string;
   sources: Source[];
   compilation: Compilation | null;
   queries: QueryExecution[];
+  fileMark: string;
+  compileMark: string;
+  queryMark: string;
   compilationTitle: string;
-  sourceStatus: (source: Source) => string;
-  compilationStatus: (compilation: Compilation) => string;
-  queryStatus: (query: QueryExecution) => string;
+  when: (value: string) => string;
 }) {
   const latestSource = [...sources].sort((left, right) =>
     left.createdAt < right.createdAt ? 1 : -1,
@@ -298,25 +307,34 @@ function activityItems({
   if (latestSource) {
     items.push({
       id: latestSource.id,
-      href: sectionHref(projectId, "data"),
+      href: `${sectionHref(projectId, "data")}?source=${encodeURIComponent(latestSource.id)}`,
+      mark: fileMark,
       title: latestSource.name,
-      detail: sourceStatus(latestSource),
+      detail: when(latestSource.createdAt),
     });
   }
   if (compilation) {
     items.push({
       id: compilation.id,
       href: `${sectionHref(projectId, "compile")}?compilation=${encodeURIComponent(compilation.id)}`,
+      mark: compileMark,
       title: compilationTitle,
-      detail: compilationStatus(compilation),
+      detail: when(compilation.startedAt),
     });
   }
   if (latestQuery) {
+    const stamp =
+      latestQuery.state.status === "completed"
+        ? latestQuery.state.completedAt
+        : latestQuery.state.status === "cancelled"
+          ? latestQuery.state.cancelledAt
+          : null;
     items.push({
       id: latestQuery.id,
       href: `${sectionHref(projectId, "query")}?query=${encodeURIComponent(latestQuery.id)}`,
+      mark: queryMark,
       title: latestQuery.text,
-      detail: queryStatus(latestQuery),
+      detail: stamp ? when(stamp) : "—",
     });
   }
 

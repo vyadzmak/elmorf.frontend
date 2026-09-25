@@ -27,6 +27,7 @@ export function AppearanceSettings() {
   return (
     <div className="flex flex-col gap-8">
       <ThemeControl
+        layout="segment"
         label={foundation("themeLabel")}
         options={[
           { value: "light", label: foundation("themeLight") },
@@ -39,6 +40,7 @@ export function AppearanceSettings() {
           }
         }}
       />
+      <p className="text-sm text-muted-foreground">{t("themeSiteNote")}</p>
       <LocaleSwitcher
         activeLocale={activeLocale}
         label={foundation("localeLabel")}

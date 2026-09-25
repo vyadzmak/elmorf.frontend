@@ -1,6 +1,10 @@
 "use client";
 
-import { morphologySearchOptions, projectListOptions } from "@elmorf/api-client";
+import {
+  morphologyGraphOptions,
+  morphologySearchOptions,
+  projectListOptions,
+} from "@elmorf/api-client";
 import {
   Command,
   CommandDialog,
@@ -36,10 +40,18 @@ export function CommandPalette({ projectId }: { projectId: string | null }) {
   const api = useApiClient();
   const [query, setQuery] = useState("");
   const [deferredQuery, setDeferredQuery] = useState("");
-  const recent = commandOpen ? readRecentDestinations() : [];
+  const recent = (commandOpen ? readRecentDestinations() : []).filter(
+    (item) =>
+      item.projectId !== projectId ||
+      !workspaceNav.some((entry) => entry.section === item.section),
+  );
   const projectsQuery = useQuery({
     ...projectListOptions(api),
     enabled: ready && commandOpen,
+  });
+  const graphQuery = useQuery({
+    ...morphologyGraphOptions(api, projectId ?? ""),
+    enabled: ready && commandOpen && projectId !== null && deferredQuery.length === 0,
   });
   const searchQuery = useQuery({
     ...morphologySearchOptions(api, projectId ?? "", deferredQuery),
@@ -115,6 +127,26 @@ export function CommandPalette({ projectId }: { projectId: string | null }) {
             </CommandGroup>
           ) : null}
           {projectId ? (
+            <CommandGroup heading={t("commandActions")}>
+              <CommandItem
+                value={t("commandAddData")}
+                onSelect={() => {
+                  closeAndGo(sectionHref(projectId, "data"));
+                }}
+              >
+                {t("commandAddData")}
+              </CommandItem>
+              <CommandItem
+                value={t("commandCompile")}
+                onSelect={() => {
+                  closeAndGo(sectionHref(projectId, "compile"));
+                }}
+              >
+                {t("commandCompile")}
+              </CommandItem>
+            </CommandGroup>
+          ) : null}
+          {projectId ? (
             <CommandGroup heading={t("commandNavigation")}>
               {workspaceNav.map((item) => (
                 <CommandItem
@@ -157,6 +189,21 @@ export function CommandPalette({ projectId }: { projectId: string | null }) {
               </CommandItem>
             ))}
           </CommandGroup>
+          {projectId && deferredQuery.length === 0 && graphQuery.data ? (
+            <CommandGroup heading={t("commandObjects")}>
+              {graphQuery.data.nodes.slice(0, 6).map((node) => (
+                <CommandItem
+                  key={node.id}
+                  value={node.label}
+                  onSelect={() => {
+                    closeAndGo(morphologyObjectHref(projectId, node.id));
+                  }}
+                >
+                  {node.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          ) : null}
           {searchQuery.data && searchQuery.data.length > 0 ? (
             <CommandGroup heading={t("commandObjects")}>
               {searchQuery.data.map((hit) => (

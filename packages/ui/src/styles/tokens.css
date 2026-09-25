@@ -49,6 +49,12 @@
   --elmorf-graph-edge-muted: #d9d5ce;
   --elmorf-graph-edge-selected: #9a6f23;
   --elmorf-graph-dimmed: #d9d5ce;
+  --elmorf-type-company: #a9823e;
+  --elmorf-type-person: #647483;
+  --elmorf-type-contract: #756b83;
+  --elmorf-type-invoice: #8a675d;
+  --elmorf-type-address: #607a76;
+  --elmorf-type-product: #77736d;
   --elmorf-inspector: #faf9f6;
   --elmorf-code-surface: #ffffff;
   --radius: 0.5rem;
@@ -121,6 +127,12 @@
   --elmorf-graph-edge-muted: #24282d;
   --elmorf-graph-edge-selected: #c89b45;
   --elmorf-graph-dimmed: #24282d;
+  --elmorf-type-company: #a9823e;
+  --elmorf-type-person: #8ea0ab;
+  --elmorf-type-contract: #a398b0;
+  --elmorf-type-invoice: #c4a094;
+  --elmorf-type-address: #8eaaa4;
+  --elmorf-type-product: #a6a19a;
   --elmorf-inspector: #171a1d;
   --elmorf-code-surface: #1d2125;
 }

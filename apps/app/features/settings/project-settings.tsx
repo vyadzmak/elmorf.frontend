@@ -7,6 +7,7 @@ import {
   projectOptions,
 } from "@elmorf/api-client";
 import { Button } from "@elmorf/ui/components/ui/button";
+import { Input } from "@elmorf/ui/components/ui/input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -83,7 +84,7 @@ function GeneralSettings({ projectId }: { projectId: string }) {
 
   return (
     <SettingsSection title={t("generalTitle")} description={t("generalDescription")}>
-      <SettingRow label={t("projectName")}>
+      <SettingRow label={t("projectName")} description={t("nameLocked")}>
         <p className="text-sm">{projectQuery.data.name}</p>
       </SettingRow>
       <SettingRow label={t("currentModel")}>
@@ -157,6 +158,7 @@ function DangerSettings({ projectId }: { projectId: string }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [confirmName, setConfirmName] = useState("");
   const projectQuery = useQuery({
     ...projectOptions(api, projectId),
     enabled: ready,
@@ -195,11 +197,21 @@ function DangerSettings({ projectId }: { projectId: string }) {
                 </AlertDialogTitle>
                 <AlertDialogDescription>{t("deleteDescription")}</AlertDialogDescription>
               </AlertDialogHeader>
+              <label className="grid gap-2 text-sm">
+                {t("deleteTypePrompt")}
+                <Input
+                  value={confirmName}
+                  autoComplete="off"
+                  onChange={(event) => {
+                    setConfirmName(event.target.value);
+                  }}
+                />
+              </label>
               <AlertDialogFooter>
                 <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                 <AlertDialogAction
                   variant="destructive"
-                  disabled={remove.isPending}
+                  disabled={remove.isPending || confirmName !== (projectQuery.data?.name ?? "")}
                   onClick={(event) => {
                     event.preventDefault();
                     remove.mutate();

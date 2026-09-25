@@ -217,8 +217,8 @@ export function CompileWorkbench({ projectId }: { projectId: string }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <h1 className="sr-only">{shell("navCompile")}</h1>
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
-        <p className="text-sm text-muted-foreground">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b border-border px-5 py-4 lg:px-6">
+        <p className="text-base font-medium">
           {modelQuery.isSuccess
             ? t("currentModel", {
                 version: modelQuery.data.version,
@@ -240,6 +240,11 @@ export function CompileWorkbench({ projectId }: { projectId: string }) {
           </Button>
         ) : null}
       </div>
+      {canCompile && modelQuery.isSuccess ? (
+        <p className="border-b border-border bg-[var(--elmorf-surface-1)] px-5 py-3 text-sm text-muted-foreground lg:px-6">
+          {t("keepsModel", { version: modelQuery.data.version })}
+        </p>
+      ) : null}
       {loading ? (
         <Skeleton className="m-4 h-40" />
       ) : currentQuery.isError && !currentMissing ? (
@@ -247,8 +252,11 @@ export function CompileWorkbench({ projectId }: { projectId: string }) {
       ) : (
         <>
           {modelQuery.isSuccess ? (
-            <dl className="grid grid-cols-2 gap-3 border-b border-border px-4 py-3 text-sm sm:grid-cols-4">
-              <Count label={t("sources")} value={format.number(modelQuery.data.sourceCount)} />
+            <dl className="grid grid-cols-2 gap-px border-b border-border bg-border sm:grid-cols-4">
+              <Count
+                label={`${t("sources")} · ${t("inVersion", { version: modelQuery.data.version })}`}
+                value={format.number(modelQuery.data.sourceCount)}
+              />
               <Count label={t("objects")} value={format.number(modelQuery.data.objectCount)} />
               <Count label={t("relations")} value={format.number(modelQuery.data.relationCount)} />
               <Count label={t("conflicts")} value={format.number(modelQuery.data.conflictCount)} />
@@ -264,11 +272,11 @@ export function CompileWorkbench({ projectId }: { projectId: string }) {
           {missing ? (
             <p className="px-4 py-2 text-sm text-muted-foreground">{t("missing")}</p>
           ) : null}
-          {current && active ? (
+          {current && (active || current.state.status === "completed") ? (
             <CompilePipeline
               compilation={current}
               now={now}
-              canCancel={canCompile}
+              canCancel={canCompile && active}
               pending={cancelMutation.isPending}
               onCancel={() => {
                 cancelMutation.mutate(current.id);
@@ -277,9 +285,10 @@ export function CompileWorkbench({ projectId }: { projectId: string }) {
                 commit({ compilation: current.id });
               }}
             />
-          ) : current?.state.status === "failed" ? (
-            <section className="border-b border-border px-4 py-3">
-              <h2 className="text-sm font-medium">
+          ) : null}
+          {current?.state.status === "failed" ? (
+            <section className="border-b border-border bg-[var(--elmorf-surface-1)] px-5 py-6 lg:px-6">
+              <h2 className="text-xl font-medium tracking-tight">
                 {t("failedTitle", { stage: stageNameLabel("flesh", t) })}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -316,16 +325,20 @@ export function CompileWorkbench({ projectId }: { projectId: string }) {
               </div>
             </section>
           ) : current?.state.status === "completed" && modelQuery.isSuccess ? (
-            <section className="border-b border-border px-4 py-3">
-              <h2 className="text-sm font-medium">
+            <section className="border-b border-border bg-[var(--elmorf-surface-1)] px-5 py-6 lg:px-6">
+              <h2 className="text-xl font-medium tracking-tight">
                 {t("completedTitle", { version: modelQuery.data.version })}
               </h2>
               <div className="mt-3 flex gap-2">
                 <Button asChild variant="outline">
-                  <Link href={sectionHref(projectId, "morphology")}>{t("openMorphology")}</Link>
+                  <Link href={sectionHref(projectId, "morphology")}>
+                    {t("openMorphologyVersion", { version: modelQuery.data.version })}
+                  </Link>
                 </Button>
                 <Button asChild variant="outline">
-                  <Link href={sectionHref(projectId, "query")}>{t("runQuery")}</Link>
+                  <Link href={sectionHref(projectId, "query")}>
+                    {t("runQueryVersion", { version: modelQuery.data.version })}
+                  </Link>
                 </Button>
               </div>
             </section>
@@ -333,6 +346,9 @@ export function CompileWorkbench({ projectId }: { projectId: string }) {
             <p className="border-b border-border px-4 py-3 text-sm text-muted-foreground">
               {t("cancelledLine", { version: current.version })}
             </p>
+          ) : null}
+          {current && !selectedId ? (
+            <CompileLogs projectId={projectId} compilationId={current.id} />
           ) : null}
           <CompileHistory
             rows={history}
@@ -351,9 +367,9 @@ export function CompileWorkbench({ projectId }: { projectId: string }) {
 
 function Count({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="font-medium tabular-nums">{value}</dd>
+    <div className="bg-background px-5 py-4 lg:px-6">
+      <dt className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">{label}</dt>
+      <dd className="mt-1 text-2xl font-medium tabular-nums tracking-tight">{value}</dd>
     </div>
   );
 }

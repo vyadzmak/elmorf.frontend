@@ -46,7 +46,9 @@ export function QueryHistory({
           {rows.map((row) => {
             const model = row.state.status === "completed" ? row.state.modelVersion : t("emptyValue");
             const elapsed =
-              row.state.status === "completed" ? format.number(row.state.elapsedMs) : t("emptyValue");
+              row.state.status === "completed"
+                ? t("elapsed", { time: format.number(row.state.elapsedMs) })
+                : t("emptyValue");
             return (
               <button
                 key={row.id}

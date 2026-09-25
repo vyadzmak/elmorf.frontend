@@ -17,8 +17,6 @@ import { isNotFound, useApiClient } from "@/lib/use-api";
 
 const emptyQueries: QueryExecution[] = [];
 
-const modes = ["natural", "structured"] as const;
-
 export function QueryWorkbench({ projectId }: { projectId: string }) {
   const t = useTranslations("Query");
   const shell = useTranslations("Shell");
@@ -95,21 +93,27 @@ export function QueryWorkbench({ projectId }: { projectId: string }) {
   return (
     <div className="flex h-full min-h-0 flex-col overflow-auto">
       <h1 className="sr-only">{shell("navQuery")}</h1>
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-[var(--elmorf-surface-1)] px-5 py-3 lg:px-6">
         <div className="flex gap-1">
-          {modes.map((mode) => (
-            <Button
-              key={mode}
-              type="button"
-              size="sm"
-              variant={language === mode ? "default" : "outline"}
-              onClick={() => {
-                setDraftLanguage(mode);
-              }}
-            >
-              {t(mode === "natural" ? "modeNatural" : "modeStructured")}
-            </Button>
-          ))}
+          <Button
+            type="button"
+            size="sm"
+            variant={language === "natural" ? "default" : "outline"}
+            onClick={() => {
+              setDraftLanguage("natural");
+            }}
+          >
+            {t("modeNatural")}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled
+            title={t("structuredUnavailable")}
+          >
+            {t("modeStructured")}
+          </Button>
         </div>
         <p className="text-sm text-muted-foreground">
           {modelQuery.isSuccess ? t("model", { version: modelQuery.data.version }) : modelMissing ? t("modelUnavailable") : null}
@@ -120,54 +124,83 @@ export function QueryWorkbench({ projectId }: { projectId: string }) {
       ) : historyQuery.isError ? (
         <p className="px-4 py-6 text-sm text-muted-foreground">{t("loadError")}</p>
       ) : (
-        <div className="grid gap-6 px-4 py-4">
+        <div className="grid gap-8 px-5 py-6 lg:px-6">
           <form
-            className="grid gap-3"
+            className="grid gap-4 rounded-xl border border-border bg-[var(--elmorf-surface-1)] p-4 sm:p-5"
             onSubmit={(event) => {
               event.preventDefault();
               run();
             }}
           >
-            <textarea
-              value={text}
-              rows={4}
-              readOnly={language === "structured"}
-              placeholder={language === "structured" ? t("structuredPlaceholder") : t("placeholder")}
-              aria-label={t("editorLabel")}
-              className={cn(
-                "w-full resize-y rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
-                language === "structured" && "text-muted-foreground",
-              )}
-              onChange={(event) => {
-                setDraftText(event.target.value);
-              }}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
-                  event.preventDefault();
-                  run();
-                }
-              }}
-            />
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  ["exampleInvoices", "exampleInvoicesText"],
+                  ["exampleContract", "exampleContractText"],
+                  ["exampleProduct", "exampleProductText"],
+                ] as const
+              ).map(([label, value]) => (
+                <Button
+                  key={label}
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setDraftText(t(value));
+                    setDraftLanguage("natural");
+                  }}
+                >
+                  {t(label)}
+                </Button>
+              ))}
+            </div>
+            <div className="relative">
+              <textarea
+                value={text}
+                rows={4}
+                readOnly={language === "structured"}
+                placeholder={language === "structured" ? t("structuredPlaceholder") : t("placeholder")}
+                aria-label={t("editorLabel")}
+                className={cn(
+                  "w-full resize-y rounded-lg border border-input bg-background px-4 py-3 pb-12 text-base leading-7 outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+                  language === "structured" && "text-muted-foreground",
+                )}
+                onChange={(event) => {
+                  setDraftText(event.target.value);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+                    event.preventDefault();
+                    run();
+                  }
+                }}
+              />
+              <div className="absolute inset-x-2 bottom-2 flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">{t("submitHint")}</span>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={
+                    language === "structured" ||
+                    text.trim().length === 0 ||
+                    modelMissing ||
+                    runMutation.isPending ||
+                    active
+                  }
+                >
+                  {t("run")}
+                </Button>
+              </div>
+            </div>
+            {draftText === null && selected ? (
+              <p className="text-xs text-muted-foreground">{t("fromHistory")}</p>
+            ) : null}
             {language === "structured" ? (
               <p className="text-sm text-muted-foreground">{t("structuredUnavailable")}</p>
             ) : null}
             {modelMissing ? (
               <p className="text-sm text-muted-foreground">{t("modelUnavailableHint")}</p>
             ) : null}
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                disabled={
-                  language === "structured" ||
-                  text.trim().length === 0 ||
-                  modelMissing ||
-                  runMutation.isPending ||
-                  active
-                }
-              >
-                {t("run")}
-              </Button>
-            </div>
           </form>
           {missing ? <p className="text-sm text-muted-foreground">{t("missing")}</p> : null}
           {runCode === "model_unavailable" ? (
@@ -180,20 +213,24 @@ export function QueryWorkbench({ projectId }: { projectId: string }) {
             <p className="text-sm text-muted-foreground">{t("actionError")}</p>
           ) : null}
           {selected ? (
-            <QueryResultView
-              execution={selected}
-              pending={runMutation.isPending || Boolean(active)}
-              onDuplicate={() => {
-                setDraftText(selected.text);
-                setDraftLanguage(selected.language);
-                commit({ query: null });
-              }}
-              onRunAgain={() => {
-                run(selected.text, selected.language);
-              }}
-            />
+            <section className="rounded-xl border border-border bg-[var(--elmorf-surface-1)] p-4 sm:p-6">
+              <QueryResultView
+                execution={selected}
+                pending={runMutation.isPending || Boolean(active)}
+                onDuplicate={() => {
+                  setDraftText(selected.text);
+                  setDraftLanguage(selected.language);
+                  commit({ query: null });
+                }}
+                onRunAgain={() => {
+                  run(selected.text, selected.language);
+                }}
+              />
+            </section>
           ) : (
-            <p className="text-sm text-muted-foreground">{t("idle")}</p>
+            <p className="rounded-xl border border-dashed border-border px-5 py-10 text-center text-sm text-muted-foreground">
+              {t("idle")}
+            </p>
           )}
           <QueryHistory
             rows={history}

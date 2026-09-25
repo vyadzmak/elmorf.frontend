@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { WorkspaceRouteSkeleton } from "@/components/shell/pending-section";
 import { MorphologyWorkbench } from "@/features/morphology/morphology-workbench";
 
 export default async function MorphologyPage({
@@ -8,7 +9,7 @@ export default async function MorphologyPage({
 }) {
   const { projectId } = await params;
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<WorkspaceRouteSkeleton />}>
       <MorphologyWorkbench projectId={projectId} />
     </Suspense>
   );

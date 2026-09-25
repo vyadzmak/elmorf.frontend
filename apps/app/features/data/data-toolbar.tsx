@@ -1,7 +1,6 @@
 "use client";
 
 import type { SourceKind } from "@elmorf/domain";
-import { Button } from "@elmorf/ui/components/ui/button";
 import { Input } from "@elmorf/ui/components/ui/input";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -60,77 +59,54 @@ export function DataToolbar({
   }, [draft, onChange, search.q]);
 
   return (
-    <div className="flex shrink-0 flex-col gap-3 border-b border-border px-4 py-3">
+    <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-border bg-[var(--elmorf-surface-1)] px-5 py-3 lg:px-6">
       <Input
         value={query}
         placeholder={t("searchPlaceholder")}
         aria-label={t("searchPlaceholder")}
+        className="w-full sm:max-w-sm"
         onChange={(event) => {
           setDraft(event.target.value);
         }}
       />
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-muted-foreground">{t("filterStatus")}</span>
-        <FilterChip
-          pressed={!search.status}
-          label={t("filterAll")}
-          onClick={() => {
-            onChange({ status: null });
+      <label className="flex items-center gap-2 text-xs text-muted-foreground">
+        {t("filterStatus")}
+        <select
+          className="h-8 rounded-md border border-border bg-background px-2 text-sm text-foreground"
+          value={search.status ?? ""}
+          onChange={(event) => {
+            const value = event.target.value;
+            onChange({
+              status: value.length > 0 ? (value as (typeof dataStatusFilters)[number]) : null,
+            });
           }}
-        />
-        {dataStatusFilters.map((status) => (
-          <FilterChip
-            key={status}
-            pressed={search.status === status}
-            label={t(statusLabelKey[status])}
-            onClick={() => {
-              onChange({ status: search.status === status ? null : status });
-            }}
-          />
-        ))}
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-muted-foreground">{t("filterKind")}</span>
-        <FilterChip
-          pressed={!search.kind}
-          label={t("filterAll")}
-          onClick={() => {
-            onChange({ kind: null });
+        >
+          <option value="">{t("filterAll")}</option>
+          {dataStatusFilters.map((status) => (
+            <option key={status} value={status}>
+              {t(statusLabelKey[status])}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="flex items-center gap-2 text-xs text-muted-foreground">
+        {t("filterKind")}
+        <select
+          className="h-8 rounded-md border border-border bg-background px-2 text-sm text-foreground"
+          value={search.kind ?? ""}
+          onChange={(event) => {
+            const value = event.target.value;
+            onChange({ kind: value.length > 0 ? (value as (typeof sourceKinds)[number]) : null });
           }}
-        />
-        {sourceKinds.map((kind) => (
-          <FilterChip
-            key={kind}
-            pressed={search.kind === kind}
-            label={t(kindLabelKey[kind])}
-            onClick={() => {
-              onChange({ kind: search.kind === kind ? null : kind });
-            }}
-          />
-        ))}
-      </div>
+        >
+          <option value="">{t("filterAll")}</option>
+          {sourceKinds.map((kind) => (
+            <option key={kind} value={kind}>
+              {t(kindLabelKey[kind])}
+            </option>
+          ))}
+        </select>
+      </label>
     </div>
-  );
-}
-
-function FilterChip({
-  pressed,
-  label,
-  onClick,
-}: {
-  pressed: boolean;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <Button
-      type="button"
-      size="sm"
-      variant={pressed ? "default" : "outline"}
-      aria-pressed={pressed}
-      onClick={onClick}
-    >
-      {label}
-    </Button>
   );
 }

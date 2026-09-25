@@ -39,10 +39,13 @@ export async function generateMetadata({
 
 export default async function TryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ object?: string }>;
 }) {
   const { locale } = await params;
+  const query = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations("Landing");
   const env = parsePublicEnv();
@@ -57,6 +60,7 @@ export default async function TryPage({
           title={t("tryPageTitle")}
           intro={t("tryPageBody")}
           signupHref={appAuthHref(locale, "signup")}
+          {...(query.object ? { initialObject: query.object } : {})}
         />
       </TryProviders>
     </SiteShell>

@@ -67,7 +67,7 @@ export function ProjectSwitcher({
           ) : projectId ? (
             <Skeleton className="h-3 w-24" />
           ) : (
-            <span className="truncate text-muted-foreground">{t("switchProject")}</span>
+            <span className="truncate text-muted-foreground">{t("noProjectSelected")}</span>
           )}
           <ChevronsUpDown className="size-4 text-muted-foreground" />
         </Button>
@@ -102,7 +102,10 @@ export function ProjectSwitcher({
                 }}
               >
                 <Plus className="size-4" />
-                {t("createProject")}
+                <span className="flex min-w-0 flex-col">
+                  <span>{t("createProject")}</span>
+                  <span className="truncate text-xs text-muted-foreground">{t("sectionPending")}</span>
+                </span>
               </CommandItem>
             </CommandGroup>
           </CommandList>

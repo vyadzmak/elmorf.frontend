@@ -14,9 +14,9 @@ export function SdkDemo({
   exampleName,
   install,
   snippet,
-  stepLabels,
   sourcesLabel,
   sourceList,
+  sourceRoles,
   compiledCounts,
   awaitingModel,
   resultLabel,
@@ -25,15 +25,18 @@ export function SdkDemo({
   copiedLabel,
   copyErrorLabel,
   codeLabel,
+  hint,
+  fictional,
+  pipeline,
 }: {
   title: string;
   body: string;
   exampleName: string;
   install: string;
   snippet: string;
-  stepLabels: Record<DemoStep, string>;
   sourcesLabel: string;
   sourceList: string;
+  sourceRoles: string[];
   compiledCounts: string;
   awaitingModel: string;
   resultLabel: string;
@@ -42,80 +45,105 @@ export function SdkDemo({
   copiedLabel: string;
   copyErrorLabel: string;
   codeLabel: string;
+  hint: string;
+  fictional: string;
+  pipeline: { index: string; title: string; body: string }[];
 }) {
-  const [step, setStep] = useState<DemoStep>("load");
+  const [step, setStep] = useState<DemoStep>("compile");
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
   const lines = snippet.split("\n");
   const sources = sourceList.split("\n").filter((name) => name.length > 0);
 
   return (
-    <section id="demo" className="flex flex-col gap-6 border-t border-border py-16">
-      <div className="flex flex-col gap-2">
-        <h2 className="text-xl font-medium tracking-tight">{title}</h2>
-        <p className="max-w-2xl text-sm text-muted-foreground">{body}</p>
-      </div>
-      <div className="flex flex-wrap gap-2" role="group" aria-label={title}>
-        {steps.map((value) => (
-          <Button
-            key={value}
-            variant={value === step ? "default" : "outline"}
-            onClick={() => {
-              setStep(value);
-            }}
-          >
-            {stepLabels[value]}
-          </Button>
-        ))}
-      </div>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div className="flex flex-col gap-3 rounded-lg border border-border bg-[var(--elmorf-code-surface)] p-4">
-          <div className="flex items-center justify-between gap-3">
-            <p className="font-mono text-xs text-muted-foreground">{install}</p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                void navigator.clipboard.writeText(`${install}\n\n${snippet}`).then(
-                  () => {
-                    setCopyState("copied");
-                  },
-                  () => {
-                    setCopyState("error");
-                  },
-                );
-              }}
-            >
-              {copyLabel}
-            </Button>
-          </div>
-          <p className="sr-only">{codeLabel}</p>
-          <pre className="overflow-x-auto font-mono text-xs leading-6">
-            {lines.map((line, index) => (
-              <code
-                key={`${index}-${line}`}
-                className={cn(
-                  "block px-2",
-                  isActiveLine(step, line) && "bg-[var(--elmorf-brass-soft)]",
-                )}
-              >
-                {line.length > 0 ? line : " "}
-              </code>
-            ))}
-          </pre>
-          <p className="text-xs text-muted-foreground" aria-live="polite">
-            {copyState === "copied" ? copiedLabel : copyState === "error" ? copyErrorLabel : ""}
-          </p>
+    <section id="demo" className="flex scroll-mt-20 flex-col gap-8 py-20 lg:py-28">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,.7fr)_minmax(0,1.3fr)]">
+        <p className="text-sm font-medium text-muted-foreground">{hint}</p>
+        <div>
+          <h2 className="text-3xl font-medium tracking-tight text-balance sm:text-5xl">{title}</h2>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">{body}</p>
         </div>
-        <LazyProductVisual
-          step={step}
-          sourcesLabel={`${sourcesLabel} · ${sources.length}`}
-          sources={sources}
-          modelLabel={exampleName}
-          counts={compiledCounts}
-          awaiting={awaitingModel}
-          resultLabel={resultLabel}
-          result={resultValue}
-        />
+      </div>
+      <ol className="grid gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-3">
+        {pipeline.map((item, index) => {
+          const active = steps[index] === step;
+          return (
+            <li key={item.index}>
+              <button
+                type="button"
+                aria-pressed={active}
+                className={cn(
+                  "flex h-full w-full flex-col bg-background p-5 text-start transition-colors duration-150 hover:bg-muted/50",
+                  active && "bg-muted",
+                )}
+                onClick={() => {
+                  const value = steps[index];
+                  if (value) setStep(value);
+                }}
+              >
+                <p className="font-mono text-xs text-muted-foreground">{item.index}</p>
+                <h3 className="mt-4 text-base font-medium">{item.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.body}</p>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)]">
+        <div className="order-2 min-w-0 flex flex-col gap-3 lg:order-1">
+          <p className="font-mono text-xs text-muted-foreground">{install}</p>
+          <div className="flex min-h-80 flex-col gap-3 rounded-xl border border-border bg-[var(--elmorf-code-surface)] p-5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="sr-only">{codeLabel}</p>
+              <p className="text-xs text-muted-foreground" aria-live="polite">
+                {copyState === "copied" ? copiedLabel : copyState === "error" ? copyErrorLabel : ""}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  void navigator.clipboard.writeText(snippet).then(
+                    () => {
+                      setCopyState("copied");
+                    },
+                    () => {
+                      setCopyState("error");
+                    },
+                  );
+                }}
+              >
+                {copyLabel}
+              </Button>
+            </div>
+            <pre className="mt-4 overflow-x-auto font-mono text-sm leading-8 whitespace-pre">
+              {lines.map((line, index) => (
+                <code
+                  key={`${index}-${line}`}
+                  className={cn(
+                    "block px-2",
+                    isActiveLine(step, line) && "bg-[var(--elmorf-brass-soft)]",
+                  )}
+                >
+                  {line.length > 0 ? line : " "}
+                </code>
+              ))}
+            </pre>
+          </div>
+        </div>
+        <div className="order-1 min-w-0 flex flex-col gap-3 lg:order-2">
+          <LazyProductVisual
+            step={step}
+            className="min-h-80 p-5"
+            sourcesLabel={`${sourcesLabel} · ${sources.length}`}
+            sources={sources}
+            sourceRoles={sourceRoles}
+            modelLabel={exampleName}
+            fictional={fictional}
+            counts={compiledCounts}
+            awaiting={awaitingModel}
+            resultLabel={resultLabel}
+            result={resultValue}
+          />
+        </div>
       </div>
     </section>
   );

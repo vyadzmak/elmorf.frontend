@@ -37,13 +37,25 @@ export function SettingsNav({ active }: { active: SettingsSectionId }) {
     { id: "profile" as const, label: t("navProfile"), href: "/settings/profile" },
     { id: "security" as const, label: t("navSecurity"), href: "/settings/security" },
   ];
+  const isAccountSection = accountItems.some((item) => item.id === active);
+  const groups = isAccountSection
+    ? [
+        { title: t("accountGroup"), items: accountItems },
+        ...(projectItems.length > 0 ? [{ title: t("projectGroup"), items: projectItems }] : []),
+      ]
+    : [
+        ...(projectItems.length > 0 ? [{ title: t("projectGroup"), items: projectItems }] : []),
+        { title: t("accountGroup"), items: accountItems },
+      ];
 
   return (
-    <nav aria-label={t("navLabel")} className="flex flex-col gap-4">
-      {projectItems.length > 0 ? (
-        <NavGroup title={t("projectGroup")} items={projectItems} active={active} />
-      ) : null}
-      <NavGroup title={t("accountGroup")} items={accountItems} active={active} />
+    <nav
+      aria-label={t("navLabel")}
+      className="-mx-5 flex gap-5 overflow-x-auto border-b border-border px-5 pb-3 lg:mx-0 lg:flex-col lg:gap-5 lg:overflow-visible lg:border-b-0 lg:px-0 lg:pb-0"
+    >
+      {groups.map((group) => (
+        <NavGroup key={group.title} title={group.title} items={group.items} active={active} />
+      ))}
     </nav>
   );
 }
@@ -58,16 +70,17 @@ function NavGroup({
   active: SettingsSectionId;
 }) {
   return (
-    <div className="flex flex-col gap-1">
-      <p className="px-2 text-xs text-muted-foreground">{title}</p>
-      <ul className="flex flex-col">
+    <div className="flex shrink-0 flex-col gap-1">
+      <p className="hidden px-2 text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground lg:block">{title}</p>
+      <ul className="flex gap-1 lg:flex-col">
         {items.map((item) => (
           <li key={item.id}>
             <Link
               href={item.href}
               aria-current={item.id === active ? "page" : undefined}
               className={cn(
-                "block rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                "block whitespace-nowrap rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted/60 hover:text-foreground lg:px-2 lg:py-1.5",
+                item.id === "danger" && "text-destructive hover:text-destructive",
                 item.id === active && "bg-muted font-medium text-foreground",
               )}
             >

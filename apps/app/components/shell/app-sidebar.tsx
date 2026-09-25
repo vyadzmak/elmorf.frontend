@@ -1,5 +1,6 @@
 "use client";
 
+import { modelOptions } from "@elmorf/api-client";
 import { ElmorfMark } from "@elmorf/ui/components/elmorf-mark";
 import {
   Sidebar,
@@ -12,12 +13,15 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@elmorf/ui/components/ui/sidebar";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ProjectSwitcher } from "@/components/shell/project-switcher";
 import { settingsIcon, workspaceNav } from "@/components/shell/nav";
+import { useMockReady } from "@/components/app-providers";
 import { useCloseMobileSidebar } from "@/components/shell/use-close-mobile-sidebar";
+import { useApiClient } from "@/lib/use-api";
 import { isSettingsPath, sectionFromPath, sectionHref } from "@/lib/workspace-path";
 
 export function AppSidebar({
@@ -30,6 +34,13 @@ export function AppSidebar({
   const t = useTranslations("Shell");
   const pathname = usePathname();
   const closeMobileSidebar = useCloseMobileSidebar();
+  const ready = useMockReady();
+  const api = useApiClient();
+  const modelQuery = useQuery({
+    ...modelOptions(api, projectId ?? ""),
+    enabled: ready && projectId !== null,
+    retry: false,
+  });
   const activeSection = sectionFromPath(pathname);
   const settingsHref = projectId
     ? `/projects/${encodeURIComponent(projectId)}/settings`
@@ -62,6 +73,7 @@ export function AppSidebar({
                   <SidebarMenuButton
                     asChild
                     isActive={activeSection === item.section}
+                    className="data-active:bg-muted data-active:text-sidebar-foreground"
                   >
                     <Link
                       href={sectionHref(projectId, item.section)}
@@ -76,8 +88,13 @@ export function AppSidebar({
             </SidebarMenu>
           </SidebarGroup>
         ) : null}
+        {modelQuery.isSuccess ? (
+          <p className="px-4 text-xs text-muted-foreground">
+            {t("sidebarModel", { version: modelQuery.data.version })}
+          </p>
+        ) : null}
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="pb-3">
         <SidebarSeparator />
         <SidebarMenu>
           <SidebarMenuItem>

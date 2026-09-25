@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { WorkspaceRouteSkeleton } from "@/components/shell/pending-section";
 import { DataWorkbench } from "@/features/data/data-workbench";
 
 export default async function DataPage({
@@ -8,7 +9,7 @@ export default async function DataPage({
 }) {
   const { projectId } = await params;
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<WorkspaceRouteSkeleton />}>
       <DataWorkbench projectId={projectId} />
     </Suspense>
   );

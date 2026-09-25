@@ -9,11 +9,13 @@ import { Badge } from "@elmorf/ui/components/ui/badge";
 import { Skeleton } from "@elmorf/ui/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { useFormatter, useTranslations } from "next-intl";
+import Link from "next/link";
 import { useMockReady } from "@/components/app-providers";
 import { objectTypeLabelKey } from "@/components/shell/nav";
 import { EvidenceList } from "@/features/morphology/evidence-list";
 import { relationTypeLabelKey } from "@/features/morphology/relation-labels";
 import { isNotFound, useApiClient } from "@/lib/use-api";
+import { sectionHref } from "@/lib/workspace-path";
 
 export function ObjectInspector({
   projectId,
@@ -114,7 +116,13 @@ export function ObjectInspector({
           </p>
         ) : null}
       </section>
-      <EvidenceList items={object.evidence} />
+      <EvidenceList items={object.evidence} projectId={projectId} />
+      <Link
+        href={sectionHref(projectId, "query")}
+        className="text-sm underline-offset-4 hover:underline"
+      >
+        {t("ask")}
+      </Link>
     </div>
   );
 }

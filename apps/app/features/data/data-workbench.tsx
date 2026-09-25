@@ -53,13 +53,16 @@ export function DataWorkbench({ projectId }: { projectId: string }) {
     return status === "queued" || status === "uploading" || status === "processing";
   }).length;
   const failedCount = sources.filter((source) => source.processing.status === "failed").length;
-  const summary = [
-    t("sourceCount", { count: sources.length }),
-    processingCount > 0 ? t("processingCount", { count: processingCount }) : null,
-    failedCount > 0 ? t("failedCount", { count: failedCount }) : null,
-  ]
-    .filter((part) => part !== null)
-    .join(" · ");
+  const summary =
+    visible.length === sources.length
+      ? [
+          t("sourceCount", { count: sources.length }),
+          processingCount > 0 ? t("processingCount", { count: processingCount }) : null,
+          failedCount > 0 ? t("failedCount", { count: failedCount }) : null,
+        ]
+          .filter((part) => part !== null)
+          .join(" · ")
+      : t("shownCount", { shown: visible.length, total: sources.length });
 
   useEffect(() => {
     if (!sourcesQuery.data) {
@@ -151,10 +154,13 @@ export function DataWorkbench({ projectId }: { projectId: string }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <h1 className="sr-only">{shell("navData")}</h1>
-      <div className="flex shrink-0 items-center justify-between gap-3 px-4 py-3">
-        <p role="status" className="text-sm text-muted-foreground">
-          {loading ? null : summary}
-        </p>
+      <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border px-5 py-4 lg:px-6">
+        <div>
+          <p role="status" className="text-base font-medium">
+            {loading ? null : summary}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("formatsHint")}</p>
+        </div>
         {canManage ? (
           <Button
             type="button"
@@ -177,7 +183,11 @@ export function DataWorkbench({ projectId }: { projectId: string }) {
       ) : null}
       <div className="min-h-0 flex-1">
         {loading ? (
-          <Skeleton className="m-4 h-[calc(100%-2rem)]" />
+          <div className="flex flex-col gap-2 p-4">
+            {Array.from({ length: 5 }, (_, index) => (
+              <Skeleton key={index} className="h-9 w-full" />
+            ))}
+          </div>
         ) : sourcesQuery.isError ? (
           <p className="px-4 py-6 text-sm text-muted-foreground">{t("loadError")}</p>
         ) : sources.length === 0 ? (
@@ -194,12 +204,27 @@ export function DataWorkbench({ projectId }: { projectId: string }) {
               </Button>
             ) : null}
           </div>
+        ) : visible.length === 0 ? (
+          <div className="flex flex-col items-start gap-3 px-4 py-6">
+            <p className="text-sm text-muted-foreground">
+              {search.status === "processing" ? t("emptyProcessing") : t("emptyFiltered")}
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                commit({ status: null, kind: null, q: null });
+              }}
+            >
+              {t("resetFilters")}
+            </Button>
+          </div>
         ) : (
           <SourceTable
             rows={visible}
             selectedId={active?.id ?? null}
             emptyLabel={t("emptyFiltered")}
-            countLabel={t("sourceCount", { count: visible.length })}
+            countLabel=""
             onSelect={(id) => {
               commit({ source: id });
             }}

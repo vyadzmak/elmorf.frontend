@@ -1,5 +1,17 @@
 import type { Compilation } from "@elmorf/domain";
 
+export function durationPhrase(ms: number): { minutes: number } | { clock: string } {
+  const totalSeconds = Math.max(0, Math.round(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours === 0 && seconds === 0 && minutes > 0) {
+    return { minutes };
+  }
+
+  return { clock: formatDuration(ms) };
+}
+
 export function formatDuration(ms: number): string {
   const totalSeconds = Math.max(0, Math.round(ms / 1000));
   const hours = Math.floor(totalSeconds / 3600);

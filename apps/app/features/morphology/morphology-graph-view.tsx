@@ -5,6 +5,7 @@ import {
   type MorphologyCanvasHandle,
 } from "@elmorf/graph/canvas";
 import type { MorphologyGraph } from "@elmorf/graph";
+import { Button } from "@elmorf/ui/components/ui/button";
 import { useTranslations } from "next-intl";
 import type { RefObject } from "react";
 
@@ -23,6 +24,7 @@ export function MorphologyGraphView({
   onSelectEdge,
   onClearSelection,
   onLayoutChange,
+  emptyMessage,
 }: {
   graph: MorphologyGraph;
   truncated: boolean;
@@ -38,6 +40,7 @@ export function MorphologyGraphView({
   onSelectEdge: (id: string) => void;
   onClearSelection: () => void;
   onLayoutChange: (phase: "arranging" | "ready") => void;
+  emptyMessage?: string;
 }) {
   const t = useTranslations("Morphology");
 
@@ -51,6 +54,27 @@ export function MorphologyGraphView({
           {t("truncated", { shown, total })}
         </p>
       ) : null}
+      {emptyMessage ? (
+        <p className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center px-6 text-center text-sm text-muted-foreground">
+          {emptyMessage}
+        </p>
+      ) : null}
+      <div className="absolute inset-x-3 bottom-3 z-10 flex items-center justify-between gap-3">
+        <p className="rounded-md bg-background/90 px-2 py-1 text-xs text-muted-foreground">
+          {t("canvasNodes", { count: shown })}
+        </p>
+        <div className="flex gap-1">
+          <Button type="button" size="sm" variant="outline" onClick={() => handleRef.current?.zoom(0.8)}>
+            {t("zoomIn")}
+          </Button>
+          <Button type="button" size="sm" variant="outline" onClick={() => handleRef.current?.zoom(1.25)}>
+            {t("zoomOut")}
+          </Button>
+          <Button type="button" size="sm" variant="outline" onClick={() => handleRef.current?.fit()}>
+            {t("fit")}
+          </Button>
+        </div>
+      </div>
       <MorphologyCanvas
         graph={graph}
         label={t("graphLabel")}

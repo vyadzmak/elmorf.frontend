@@ -42,15 +42,20 @@ export function UserMenu({ session }: { session: Session }) {
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>{session.user.email}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/settings/appearance">{t("appearance")}</Link>
-        </DropdownMenuItem>
+        <DropdownMenuLabel>{t("accountGroup")}</DropdownMenuLabel>
         <DropdownMenuItem asChild>
           <Link href="/settings/profile">{t("profile")}</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/settings/security">{t("security")}</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/settings/appearance">{t("appearance")}</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           disabled={signOut.isPending}
+          className="text-destructive focus:text-destructive"
           onSelect={() => {
             signOut.mutate();
           }}

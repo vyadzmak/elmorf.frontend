@@ -9,6 +9,7 @@ import { applyEdgeVisualState, applyNodeVisualState } from "./visual";
 
 export interface MorphologyCanvasHandle {
   fit: () => void;
+  zoom: (factor: number) => void;
 }
 
 export interface MorphologyCanvasProps {
@@ -42,14 +43,15 @@ function focusNode(renderer: CanvasRenderer, nodeId: string): void {
   }
 
   const display = renderer.getNodeDisplayData(nodeId);
-  if (!display || renderer.getGraph().order <= 80) {
+  if (!display) {
     return;
   }
 
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const ratio = renderer.getGraph().order <= 24 ? 0.8 : 0.35;
   void renderer.getCamera().animate(
-    { x: display.x, y: display.y, ratio: 0.35 },
-    { duration: reduced ? 0 : 250 },
+    { x: display.x, y: display.y, ratio },
+    { duration: reduced ? 0 : 180 },
   );
 }
 
@@ -110,6 +112,17 @@ export function MorphologyCanvas({
 
         void renderer.getCamera().animatedReset({ duration: 200 });
       },
+      zoom(factor: number) {
+        const renderer = rendererRef.current;
+        if (!renderer) {
+          return;
+        }
+
+        const camera = renderer.getCamera();
+        const ratio = Math.min(2, Math.max(0.08, camera.ratio * factor));
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        void camera.animate({ ratio }, { duration: reduced ? 0 : 180 });
+      },
     };
 
     return () => {
@@ -140,7 +153,7 @@ export function MorphologyCanvas({
       const created = new SigmaRenderer(graph, container, {
         allowInvalidContainer: true,
         enableEdgeEvents: true,
-        renderEdgeLabels: false,
+        renderEdgeLabels: graph.order <= 24,
         hideEdgesOnMove: graph.order > 80,
         labelRenderedSizeThreshold: graph.order > 80 ? 8 : 0,
         labelSize: 13,
@@ -159,6 +172,10 @@ export function MorphologyCanvas({
             hidden: visual.hiddenNodeIds.has(node),
             conflict: data.conflictCount > 0,
             colors: colorsRef.current,
+            ...(colorsRef.current.types[data.objectType] !== undefined
+              ? { typeColor: colorsRef.current.types[data.objectType] as string }
+              : {}),
+            degree: graph.degree(node),
           });
           return {
             ...data,
@@ -183,11 +200,18 @@ export function MorphologyCanvas({
             hidden: visual.hiddenEdgeIds.has(edge),
             colors: colorsRef.current,
           });
+          const showLabel =
+            graph.order <= 24 ||
+            edge === visual.selectedEdgeId ||
+            (visual.selectedNodeId !== null &&
+              (source === visual.selectedNodeId || target === visual.selectedNodeId));
           return {
             ...data,
             color: state.color,
             size: state.size,
             hidden: state.hidden,
+            label: showLabel && !state.hidden ? data.label : null,
+            forceLabel: showLabel,
           };
         },
       });
@@ -237,7 +261,7 @@ export function MorphologyCanvas({
         created.refresh();
         callbackRef.current.onLayoutChange("ready");
         const selected = visualRef.current.selectedNodeId;
-        if (selected && graph.order > 80) {
+        if (selected) {
           focusNode(created, selected);
           return;
         }

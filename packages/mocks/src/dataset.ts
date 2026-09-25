@@ -168,6 +168,7 @@ const relations: Relation[] = (
     ["rel_belongs", "BELONGS_TO", "obj_msa_1842", "obj_harbor_pine"],
     ["rel_supplies", "SUPPLIES", "obj_harbor_pine", "obj_brass_valve"],
     ["rel_located", "LOCATED_AT", "obj_harbor_pine", "obj_cedar_wharf"],
+    ["rel_invoice", "BELONGS_TO", "obj_inv_2041", "obj_msa_1842"],
   ] as const
 ).map(([id, type, sourceObjectId, targetObjectId]) =>
   RelationSchema.parse({

@@ -22,7 +22,11 @@ export function TryGraph({
   const model = useMemo(() => createGraphologyGraph(graph), [graph]);
   const onSelectEdge = useCallback(() => undefined, []);
   const onClearSelection = useCallback(() => undefined, []);
-  const onLayoutChange = useCallback(() => undefined, []);
+  const onLayoutChange = useCallback((phase: "arranging" | "ready") => {
+    if (phase === "ready") {
+      handleRef.current?.fit();
+    }
+  }, []);
 
   if (model.order === 0) {
     return null;

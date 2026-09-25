@@ -22,6 +22,8 @@ export function applyNodeVisualState(input: {
   hidden: boolean;
   conflict: boolean;
   colors: GraphColors;
+  typeColor?: string;
+  degree?: number;
 }): NodeVisualState {
   if (input.hidden) {
     return {
@@ -45,9 +47,12 @@ export function applyNodeVisualState(input: {
     };
   }
 
+  const typeColor = input.typeColor ?? input.colors.nodeBorder;
+  const resting = 9 + Math.min(input.degree ?? 1, 5);
+
   if (input.neighbour) {
     return {
-      color: input.conflict ? input.colors.conflict : input.colors.nodeBorder,
+      color: input.conflict ? input.colors.conflict : typeColor,
       size: 12,
       hidden: false,
       forceLabel: false,
@@ -68,8 +73,8 @@ export function applyNodeVisualState(input: {
   }
 
   return {
-    color: input.conflict ? input.colors.conflict : input.colors.nodeBorder,
-    size: 10,
+    color: input.conflict ? input.colors.conflict : typeColor,
+    size: resting,
     hidden: false,
     forceLabel: false,
     zIndex: 0,

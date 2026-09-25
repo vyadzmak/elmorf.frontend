@@ -202,6 +202,15 @@ export function MorphologyWorkbench({ projectId }: { projectId: string }) {
   const failed = objectsQuery.isError || relationsQuery.isError || graphQuery.isError;
 
   useEffect(() => {
+    if (
+      window.matchMedia("(max-width: 767px)").matches &&
+      !new URLSearchParams(window.location.search).has("view")
+    ) {
+      commit({ view: "objects" });
+    }
+  }, [commit]);
+
+  useEffect(() => {
     if (!activeObjectId && !activeRelationId) {
       if (ownsInspector.current) {
         closeInspector();
@@ -342,6 +351,9 @@ export function MorphologyWorkbench({ projectId }: { projectId: string }) {
               commit({ object: null, relation: null });
             }}
             onLayoutChange={setLayoutPhase}
+            {...(rendered.order > 0 && renderedNodes.size === 0
+              ? { emptyMessage: search.conflict ? t("noConflicts") : t("filterEmpty") }
+              : {})}
           />
         ) : null}
       </div>

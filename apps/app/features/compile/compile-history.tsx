@@ -2,8 +2,8 @@
 
 import type { Compilation, ModelSummary } from "@elmorf/domain";
 import { cn } from "@elmorf/ui/lib/utils";
-import { useFormatter, useTranslations } from "next-intl";
-import { compilationDurationMs, formatDuration } from "@/features/compile/format-duration";
+import { useFormatter, useNow, useTranslations } from "next-intl";
+import { compilationDurationMs, durationPhrase } from "@/features/compile/format-duration";
 
 const columns = "4.5rem 6rem 5.5rem 5.5rem 5.5rem 6rem 7.5rem 11rem";
 
@@ -30,6 +30,7 @@ export function CompileHistory({
 }) {
   const t = useTranslations("Compile");
   const format = useFormatter();
+  const clock = useNow({ updateInterval: 60_000 });
 
   return (
     <section className="flex min-h-0 flex-1 flex-col">
@@ -63,10 +64,20 @@ export function CompileHistory({
               ? models.find((item) => item.id === completed.modelVersionId)
               : undefined;
             const duration = compilationDurationMs(row, now);
-            const created = format.dateTime(new Date(row.startedAt), {
+            const started = new Date(row.startedAt);
+            const created = `${format.dateTime(started, {
               dateStyle: "medium",
               timeStyle: "short",
-            });
+            })} · ${format.relativeTime(started, { now: clock })}`;
+            const durationLabel =
+              duration === null
+                ? t("emptyValue")
+                : (() => {
+                    const phrase = durationPhrase(duration);
+                    return "minutes" in phrase
+                      ? t("durationMinutes", { count: phrase.minutes })
+                      : phrase.clock;
+                  })();
             return (
               <button
                 key={row.id}
@@ -88,7 +99,7 @@ export function CompileHistory({
                 <span>{model ? format.number(model.relationCount) : t("emptyValue")}</span>
                 <span>{model ? format.number(model.conflictCount) : t("emptyValue")}</span>
                 <span className="font-mono text-xs tabular-nums">
-                  {duration === null ? t("emptyValue") : formatDuration(duration)}
+                  {durationLabel}
                 </span>
                 <span className="truncate">{created}</span>
               </button>

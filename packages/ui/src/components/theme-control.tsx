@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
+import { cn } from "../lib/utils";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 
 export type ThemeChoice = "light" | "dark" | "system";
@@ -16,10 +17,12 @@ export function ThemeControl({
   label,
   options,
   onThemeChange,
+  layout = "stack",
 }: {
   label: string;
   options: { value: ThemeChoice; label: string }[];
   onThemeChange?: (theme: ThemeChoice) => void;
+  layout?: "stack" | "row" | "segment";
 }) {
   const { theme, setTheme, forcedTheme } = useTheme();
   const isClient = useSyncExternalStore(
@@ -33,8 +36,36 @@ export function ThemeControl({
       ? activeTheme
       : "system";
 
+  if (layout === "segment") {
+    return (
+      <div className="flex flex-wrap items-center gap-3">
+        <p className="text-sm font-medium">{label}</p>
+        <div role="radiogroup" aria-label={label} className="inline-flex rounded-lg border border-border p-0.5">
+          {options.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={value === option.value}
+              className={cn(
+                "h-7 rounded-md px-2.5 text-sm transition-colors duration-150",
+                value === option.value ? "bg-muted font-medium text-foreground" : "text-muted-foreground",
+              )}
+              onClick={() => {
+                setTheme(option.value);
+                onThemeChange?.(option.value);
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <fieldset className="flex flex-col gap-3">
+    <fieldset className={layout === "row" ? "flex flex-wrap items-center gap-3" : "flex flex-col gap-3"}>
       <legend className="text-sm font-medium">{label}</legend>
       <RadioGroup
         value={value}
@@ -44,7 +75,7 @@ export function ThemeControl({
             onThemeChange?.(next);
           }
         }}
-        className="gap-3"
+        className={layout === "row" ? "flex flex-row flex-wrap gap-3" : "gap-3"}
       >
         {options.map((option) => (
           <label

@@ -2,8 +2,9 @@
 
 import type { Compilation, CompilationStageName } from "@elmorf/domain";
 import { Button } from "@elmorf/ui/components/ui/button";
+import { Check, Circle, LoaderCircle, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { compilationDurationMs, formatDuration } from "@/features/compile/format-duration";
+import { compilationDurationMs, durationPhrase, formatDuration } from "@/features/compile/format-duration";
 
 const stageKeys = {
   bones: "stageBones",
@@ -11,18 +12,17 @@ const stageKeys = {
   compile: "stageCompile",
 } as const;
 
-function stageMark(state: Compilation["stages"][number]["state"]): string {
+function StageMark({ state }: { state: Compilation["stages"][number]["state"] }) {
   if (state === "completed") {
-    return "✓";
+    return <Check className="size-4" aria-hidden />;
   }
   if (state === "running") {
-    return "●";
+    return <LoaderCircle className="size-4 animate-spin" aria-hidden />;
   }
   if (state === "failed") {
-    return "!";
+    return <TriangleAlert className="size-4" aria-hidden />;
   }
-
-  return "·";
+  return <Circle className="size-3" aria-hidden />;
 }
 
 export function CompilePipeline({
@@ -42,17 +42,33 @@ export function CompilePipeline({
 }) {
   const t = useTranslations("Compile");
   const duration = compilationDurationMs(compilation, now);
+  const elapsed =
+    duration === null
+      ? t("emptyValue")
+      : (() => {
+          const phrase = durationPhrase(duration);
+          return "minutes" in phrase
+            ? t("durationMinutes", { count: phrase.minutes })
+            : phrase.clock;
+        })();
   const status =
     compilation.state.status === "queued"
       ? t("queuedStatus")
-      : t("runningStatus", { elapsed: duration === null ? t("emptyValue") : formatDuration(duration) });
+      : compilation.state.status === "completed"
+        ? elapsed
+        : t("runningStatus", { elapsed });
 
   return (
-    <section className="border-b border-border px-4 py-3">
+    <section className="border-b border-border px-5 py-6 lg:px-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-medium">{t("runningTitle", { version: compilation.version })}</h2>
-          <p role="status" className="text-sm text-muted-foreground">
+          <p className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
+            {compilation.version}
+          </p>
+          <h2 className="mt-1 text-xl font-medium tracking-tight">
+            {t("runningTitle", { version: compilation.version })}
+          </h2>
+          <p role="status" className="mt-1 text-sm text-muted-foreground">
             {status}
           </p>
         </div>
@@ -67,19 +83,26 @@ export function CompilePipeline({
           ) : null}
         </div>
       </div>
-      <ol className="mt-3 grid gap-1">
+      <ol className="mt-6 grid gap-3 md:grid-cols-3">
         {compilation.stages.map((stage) => (
           <li
             key={stage.name}
-            className="grid grid-cols-[1fr_auto_4.5rem] items-center gap-3 text-sm"
+            className="rounded-lg border border-border bg-[var(--elmorf-surface-1)] p-4"
           >
-            <span>{t(stageKeys[stage.name])}</span>
-            <span className={stage.state === "failed" ? "text-destructive" : "text-muted-foreground"}>
-              {stageMark(stage.state)}
+            <span className={stage.state === "failed" ? "text-destructive" : "text-primary"}>
+              <StageMark state={stage.state} />
             </span>
-            <span className="text-end font-mono text-xs tabular-nums text-muted-foreground">
-              {stage.elapsedMs === undefined ? t("emptyValue") : formatDuration(stage.elapsedMs)}
-            </span>
+            <p className="mt-6 text-base font-medium">{t(stageKeys[stage.name])}</p>
+            <p className="mt-1 font-mono text-xs tabular-nums text-muted-foreground">
+              {stage.elapsedMs === undefined
+                ? t("emptyValue")
+                : (() => {
+                    const phrase = durationPhrase(stage.elapsedMs);
+                    return "minutes" in phrase
+                      ? t("durationMinutes", { count: phrase.minutes })
+                      : formatDuration(stage.elapsedMs);
+                  })()}
+            </p>
           </li>
         ))}
       </ol>

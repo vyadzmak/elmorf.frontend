@@ -112,7 +112,9 @@ export function SourceTable({
         id: "type",
         accessorFn: (row) => row.kind,
         header: t("columnType"),
-        cell: ({ row }) => sourceKindLabel(row.original.kind, t),
+        cell: ({ row }) => (
+          <span className="font-mono text-xs uppercase">{sourceKindLabel(row.original.kind, t)}</span>
+        ),
       },
       {
         id: "status",
@@ -124,7 +126,9 @@ export function SourceTable({
         id: "size",
         accessorFn: (row) => row.sizeBytes,
         header: t("columnSize"),
-        cell: ({ row }) => format.bytes(row.original.sizeBytes),
+        cell: ({ row }) => (
+          <span className="block text-end tabular-nums">{format.bytes(row.original.sizeBytes)}</span>
+        ),
       },
       {
         id: "updated",
@@ -170,14 +174,14 @@ export function SourceTable({
   const virtualizer = useVirtualizer({
     count: tableRows.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 40,
+    estimateSize: () => 36,
     overscan: 8,
   });
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex shrink-0 items-center justify-between gap-3 px-4 py-2">
-        <p className="text-xs text-muted-foreground">{countLabel}</p>
+      <div className="hidden shrink-0 items-center justify-between gap-3 px-5 py-2 md:flex lg:px-6">
+        {countLabel ? <p className="text-xs text-muted-foreground">{countLabel}</p> : <span />}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button type="button" variant="outline" size="sm">
@@ -203,7 +207,35 @@ export function SourceTable({
       {tableRows.length === 0 ? (
         <p className="px-4 py-6 text-sm text-muted-foreground">{emptyLabel}</p>
       ) : (
-        <div ref={parentRef} className="min-h-0 flex-1 overflow-auto">
+        <>
+        <div className="min-h-0 flex-1 overflow-auto md:hidden">
+          <ul className="divide-y divide-border">
+            {tableRows.map((row) => (
+              <li key={row.id}>
+                <button
+                  type="button"
+                  aria-pressed={row.id === selectedId}
+                  className={cn(
+                    "flex w-full items-center justify-between gap-4 px-5 py-4 text-start",
+                    row.id === selectedId ? "bg-muted" : "hover:bg-muted/60",
+                  )}
+                  onClick={() => {
+                    onSelect(row.id);
+                  }}
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-medium">{row.original.name}</span>
+                    <span className="mt-1 block font-mono text-xs uppercase text-muted-foreground">
+                      {sourceKindLabel(row.original.kind, t)} · {format.bytes(row.original.sizeBytes)}
+                    </span>
+                  </span>
+                  <SourceStatusText processing={row.original.processing} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div ref={parentRef} className="hidden min-h-0 flex-1 overflow-auto md:block">
           <div
             className="sticky top-0 z-10 grid min-w-[760px] items-center gap-3 border-b border-border bg-background px-3"
             style={{ gridTemplateColumns: template }}
@@ -240,7 +272,9 @@ export function SourceTable({
                   aria-pressed={row.id === selectedId}
                   className={cn(
                     "absolute start-0 grid w-full items-center gap-3 border-b border-border px-3 text-start text-sm",
-                    row.id === selectedId ? "bg-accent" : "hover:bg-muted",
+                    row.id === selectedId
+                      ? "border-s-2 border-s-primary bg-muted/80"
+                      : "hover:bg-muted",
                   )}
                   style={{
                     height: item.size,
@@ -261,6 +295,7 @@ export function SourceTable({
             })}
           </div>
         </div>
+        </>
       )}
     </div>
   );

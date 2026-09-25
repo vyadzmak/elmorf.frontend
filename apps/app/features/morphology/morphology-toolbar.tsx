@@ -35,6 +35,8 @@ export function MorphologyToolbar({
   const [query, setQuery] = useState("");
   const [deferredQuery, setDeferredQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const filtersActive = Boolean(search.type || search.relationType || search.conflict);
   const results = useQuery({
     ...morphologySearchOptions(api, projectId, deferredQuery),
     enabled: ready && open && deferredQuery.length > 0,
@@ -50,7 +52,7 @@ export function MorphologyToolbar({
   }, [query]);
 
   return (
-    <div className="flex shrink-0 flex-col gap-3 border-b border-border px-4 py-3">
+    <div className="flex shrink-0 flex-col gap-3 border-b border-border bg-[var(--elmorf-surface-1)] px-5 py-3 lg:px-6">
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap gap-1">
           <Button
@@ -143,6 +145,17 @@ export function MorphologyToolbar({
             </div>
           ) : null}
         </div>
+        <Button
+          type="button"
+          size="sm"
+          variant={filtersActive ? "secondary" : "outline"}
+          aria-pressed={filtersOpen || filtersActive}
+          onClick={() => {
+            setFiltersOpen((current) => !current);
+          }}
+        >
+          {t("showFilters")}
+        </Button>
         {search.view === "graph" ? (
           <Button type="button" size="sm" variant="outline" onClick={onFit}>
             {t("fit")}
@@ -154,61 +167,46 @@ export function MorphologyToolbar({
           </p>
         ) : null}
       </div>
+      {filtersOpen || filtersActive ? (
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-muted-foreground">{t("filterType")}</span>
-        <Button
-          type="button"
-          size="sm"
-          variant={search.type ? "outline" : "default"}
-          aria-pressed={!search.type}
-          onClick={() => {
-            onChange({ type: null });
-          }}
-        >
-          {t("filterAll")}
-        </Button>
-        {objectTypes.map((type) => (
-          <Button
-            key={type}
-            type="button"
-            size="sm"
-            variant={search.type === type ? "default" : "outline"}
-            aria-pressed={search.type === type}
-            onClick={() => {
-              onChange({ type: search.type === type ? null : type });
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          {t("filterType")}
+          <select
+            className="h-8 rounded-md border border-border bg-background px-2 text-sm text-foreground"
+            value={search.type ?? ""}
+            onChange={(event) => {
+              const value = event.target.value;
+              onChange({ type: value.length > 0 ? (value as (typeof objectTypes)[number]) : null });
             }}
           >
-            {shell(objectTypeLabelKey[type])}
-          </Button>
-        ))}
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-muted-foreground">{t("filterRelation")}</span>
-        <Button
-          type="button"
-          size="sm"
-          variant={search.relationType ? "outline" : "default"}
-          aria-pressed={!search.relationType}
-          onClick={() => {
-            onChange({ relationType: null });
-          }}
-        >
-          {t("filterAll")}
-        </Button>
-        {relationTypes.map((type) => (
-          <Button
-            key={type}
-            type="button"
-            size="sm"
-            variant={search.relationType === type ? "default" : "outline"}
-            aria-pressed={search.relationType === type}
-            onClick={() => {
-              onChange({ relationType: search.relationType === type ? null : type });
+            <option value="">{t("filterAll")}</option>
+            {objectTypes.map((type) => (
+              <option key={type} value={type}>
+                {shell(objectTypeLabelKey[type])}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          {t("filterRelation")}
+          <select
+            className="h-8 rounded-md border border-border bg-background px-2 text-sm text-foreground"
+            value={search.relationType ?? ""}
+            onChange={(event) => {
+              const value = event.target.value;
+              onChange({
+                relationType: value.length > 0 ? (value as (typeof relationTypes)[number]) : null,
+              });
             }}
           >
-            {t(relationTypeLabelKey[type])}
-          </Button>
-        ))}
+            <option value="">{t("filterAll")}</option>
+            {relationTypes.map((type) => (
+              <option key={type} value={type}>
+                {t(relationTypeLabelKey[type])}
+              </option>
+            ))}
+          </select>
+        </label>
         <Button
           type="button"
           size="sm"
@@ -221,6 +219,7 @@ export function MorphologyToolbar({
           {t("filterConflict")}
         </Button>
       </div>
+      ) : null}
     </div>
   );
 }

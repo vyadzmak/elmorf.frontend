@@ -39,12 +39,14 @@ export function AppTopbar({
         : t("projectsTitle");
 
   return (
-    <header className="flex h-[var(--app-topbar-height)] shrink-0 items-center gap-3 border-b border-border px-3">
+    <header className="flex h-[var(--app-topbar-height)] shrink-0 items-center gap-3 border-b border-border bg-[var(--elmorf-surface-1)] px-3 lg:px-5">
       <SidebarTrigger className="xl:hidden" aria-label={t("openSidebar")} />
-      <p className="min-w-0 flex-1 truncate text-sm font-medium">{title}</p>
+      <p className="min-w-0 flex-1 truncate text-sm font-medium tracking-tight text-foreground">
+        {title}
+      </p>
       <Button
         type="button"
-        variant="outline"
+        variant="ghost"
         className="h-8 gap-2 px-2 font-normal text-muted-foreground"
         onClick={() => {
           setCommandOpen(true);

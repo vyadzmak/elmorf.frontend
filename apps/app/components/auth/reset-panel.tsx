@@ -67,10 +67,10 @@ export function ResetPanel() {
             {rootError}
           </p>
         ) : null}
-        <Button type="submit" disabled={!ready || reset.isPending}>
+        <Button type="submit" className="h-10" disabled={!ready || reset.isPending}>
           {t("resetTitle")}
         </Button>
-        <Link href="/login" className="text-sm underline-offset-4 hover:underline">
+        <Link href="/login" className="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
           {t("backToSignIn")}
         </Link>
       </form>

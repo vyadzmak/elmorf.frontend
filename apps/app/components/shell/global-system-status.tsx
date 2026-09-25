@@ -15,9 +15,11 @@ import { Skeleton } from "@elmorf/ui/components/ui/skeleton";
 import { cn } from "@elmorf/ui/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useMockReady } from "@/components/app-providers";
 import { deriveSystemStatus, type SystemTone } from "@/lib/system-status";
 import { isNotFound, useApiClient } from "@/lib/use-api";
+import { sectionHref } from "@/lib/workspace-path";
 
 const toneClassName: Record<SystemTone, string> = {
   ready: "bg-[var(--elmorf-success)]",
@@ -108,6 +110,7 @@ export function GlobalSystemStatus({ projectId }: { projectId: string | null }) 
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72 gap-3">
         <StatusRow
+          href={sectionHref(projectId, "data")}
           label={t("statusData")}
           value={
             sourcesQuery.isError
@@ -117,18 +120,26 @@ export function GlobalSystemStatus({ projectId }: { projectId: string | null }) 
                 : t("statusIdle")
           }
         />
-        <StatusRow label={t("statusCompilation")} value={compilationLabel} />
-        <StatusRow label={t("statusModel")} value={modelLabel} />
+        <StatusRow
+          href={sectionHref(projectId, "compile")}
+          label={t("statusCompilation")}
+          value={compilationLabel}
+        />
+        <StatusRow
+          href={sectionHref(projectId, "overview")}
+          label={t("statusModel")}
+          value={modelLabel}
+        />
       </PopoverContent>
     </Popover>
   );
 }
 
-function StatusRow({ label, value }: { label: string; value: string }) {
+function StatusRow({ href, label, value }: { href: string; label: string; value: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-3">
+    <Link href={href} className="flex items-baseline justify-between gap-3 rounded-md px-1 py-1 hover:bg-muted">
       <span className="text-muted-foreground">{label}</span>
       <span className="text-end font-medium">{value}</span>
-    </div>
+    </Link>
   );
 }

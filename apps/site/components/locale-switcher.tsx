@@ -14,7 +14,7 @@ export function LocaleSwitcher({
   const links = locales.map((code) => (
     <Button
       key={code}
-      variant={code === activeLocale ? "default" : "outline"}
+      variant={code === activeLocale ? "secondary" : "outline"}
       size={inline ? "sm" : "default"}
       asChild
     >

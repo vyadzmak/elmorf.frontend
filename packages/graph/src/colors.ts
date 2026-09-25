@@ -9,6 +9,7 @@ export interface GraphColors {
   dimmed: string;
   label: string;
   conflict: string;
+  types: Record<string, string>;
 }
 
 const fallbackColors: GraphColors = {
@@ -22,6 +23,14 @@ const fallbackColors: GraphColors = {
   dimmed: "#24282d",
   label: "#e8e6e3",
   conflict: "#b85c4a",
+  types: {
+    company: "#a9823e",
+    person: "#8ea0ab",
+    contract: "#a398b0",
+    invoice: "#c4a094",
+    address: "#8eaaa4",
+    product: "#a6a19a",
+  },
 };
 
 function readToken(style: CSSStyleDeclaration, token: string, fallback: string): string {
@@ -46,5 +55,13 @@ export function readGraphColors(): GraphColors {
     dimmed: readToken(style, "--elmorf-graph-dimmed", fallbackColors.dimmed),
     label: readToken(style, "--foreground", fallbackColors.label),
     conflict: readToken(style, "--destructive", fallbackColors.conflict),
+    types: {
+      company: readToken(style, "--elmorf-type-company", fallbackColors.types.company ?? "#a9823e"),
+      person: readToken(style, "--elmorf-type-person", fallbackColors.types.person ?? "#8ea0ab"),
+      contract: readToken(style, "--elmorf-type-contract", fallbackColors.types.contract ?? "#a398b0"),
+      invoice: readToken(style, "--elmorf-type-invoice", fallbackColors.types.invoice ?? "#c4a094"),
+      address: readToken(style, "--elmorf-type-address", fallbackColors.types.address ?? "#8eaaa4"),
+      product: readToken(style, "--elmorf-type-product", fallbackColors.types.product ?? "#a6a19a"),
+    },
   };
 }
