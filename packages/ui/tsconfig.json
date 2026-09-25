@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@elmorf/ui/components/*": ["./src/components/*"],
+      "@elmorf/ui/components/ui/*": ["./src/components/ui/*"],
+      "@elmorf/ui/lib/*": ["./src/lib/*"],
+      "@elmorf/ui/hooks/*": ["./src/hooks/*"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".storybook/**/*.ts",
+    ".storybook/**/*.tsx",
+    "vitest.config.ts"
+  ]
+}

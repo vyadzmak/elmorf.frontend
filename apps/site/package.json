@@ -1,0 +1,36 @@
+{
+  "name": "@elmorf/site",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3001",
+    "build": "next build",
+    "start": "next start --port 3001",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@elmorf/api-client": "workspace:*",
+    "@elmorf/config": "workspace:*",
+    "@elmorf/domain": "workspace:*",
+    "@elmorf/graph": "workspace:*",
+    "@elmorf/i18n": "workspace:*",
+    "@elmorf/mocks": "workspace:*",
+    "@elmorf/ui": "workspace:*",
+    "@tanstack/react-query": "^5.90.0",
+    "next": "catalog:",
+    "next-intl": "^4.3.9",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-next": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
+  }
+}

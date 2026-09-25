@@ -1,0 +1,34 @@
+{
+  "name": "@elmorf/mocks",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./browser": "./src/browser.ts"
+  },
+  "dependencies": {
+    "@elmorf/domain": "workspace:*",
+    "@faker-js/faker": "^9.9.0",
+    "msw": "^2.11.0",
+    "zod": "catalog:"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@elmorf/api-client": "workspace:*",
+    "eslint": "catalog:",
+    "eslint-config-next": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "msw": {
+    "workerDirectory": [
+      "../../apps/app/public",
+      "../../apps/site/public"
+    ]
+  }
+}

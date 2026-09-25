@@ -1,0 +1,25 @@
+{
+  "name": "@elmorf/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./env": "./src/env.ts",
+    "./report-error": "./src/report-error.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-next": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

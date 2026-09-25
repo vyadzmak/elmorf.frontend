@@ -1,0 +1,30 @@
+{
+  "name": "@elmorf/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@elmorf/domain": "workspace:*",
+    "@tanstack/react-query": "^5.90.0",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "catalog:"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "react": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-next": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
