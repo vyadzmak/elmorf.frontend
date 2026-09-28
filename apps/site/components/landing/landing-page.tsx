@@ -92,10 +92,10 @@ export async function LandingPage() {
         <h2 className={h2}>{t("useCasesTitle")}</h2>
         <ul className="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
           {cases.map((item) => (
-            <li key={item.title}>
+            <li key={item.title} className="flex flex-col">
               <h3 className="text-base font-medium tracking-tight">{t(item.title)}</h3>
               <p className={`mt-2 ${copy}`}>{t(item.body)}</p>
-              <p className="mt-3 font-mono text-[12px] leading-5 text-muted-foreground">{t(item.example)}</p>
+              <p className="mt-auto pt-3 font-mono text-[12px] leading-5 text-muted-foreground">{t(item.example)}</p>
             </li>
           ))}
         </ul>

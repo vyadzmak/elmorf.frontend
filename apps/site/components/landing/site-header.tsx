@@ -20,9 +20,14 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-transparent bg-[var(--elmorf-surface-1)]">
       <div className="mx-auto flex w-full max-w-[76rem] items-center justify-between gap-4 px-6 py-3">
-        <Link href="/" className="flex items-center gap-2.5 text-sm font-medium">
-          <ElmorfMark className="size-7" />
-          {t("brand")}
+        <Link href="/" className="flex items-center gap-2.5">
+          <ElmorfMark className="size-7 shrink-0" />
+          <span className="flex flex-col">
+            <span className="text-sm font-medium leading-none">{t("brand")}</span>
+            <span className="mt-1 font-mono text-[11px] leading-none whitespace-nowrap text-muted-foreground">
+              {t("nameExpansion")}
+            </span>
+          </span>
         </Link>
         <div className="flex items-center gap-2">
           <nav className="hidden items-center gap-5 md:flex" aria-label={t("brand")}>

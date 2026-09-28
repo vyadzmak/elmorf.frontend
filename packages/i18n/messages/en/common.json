@@ -495,9 +495,10 @@
     "securityEmpty": "This browser session is signed in. Password changes arrive with a real login."
   },
   "Landing": {
-    "metaTitle": "Elmorf — Build domain models from data",
+    "metaTitle": "Elmorf — Elastic morphology",
     "metaDescription": "Elmorf compiles documents and structured data into a persistent domain model without requiring a predefined schema, ontology or relationship map.",
     "brand": "Elmorf",
+    "nameExpansion": "Elastic morphology",
     "menu": "Menu",
     "signIn": "Sign in",
     "try": "Try Elmorf",
