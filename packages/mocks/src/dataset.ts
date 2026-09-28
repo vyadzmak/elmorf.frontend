@@ -157,7 +157,7 @@ const objects: CompiledObject[] = [
     projectId: DEMO_PROJECT_ID,
     modelVersionId: DEMO_MODEL_ID,
     confidence: 0.92,
-    conflictCount: 0,
+    conflictCount: item.id === "obj_msa_1842" ? 1 : 0,
   }),
 );
 
@@ -216,7 +216,13 @@ const model = ModelSummarySchema.parse({
   sourceCount: sources.length,
   objectCount: objects.length,
   relationCount: relations.length,
-  conflictCount: 0,
+  conflictCount: 1,
+});
+
+const msaConflict = ConflictSchema.parse({
+  id: "cnf_msa_date",
+  objectId: "obj_msa_1842",
+  summary: "Two effective dates were extracted for MSA-1842.",
 });
 
 const session = SessionSchema.parse({
@@ -310,7 +316,7 @@ function happyDataset(): MockDataset {
     models: [model],
     objects,
     relations,
-    conflicts: [],
+    conflicts: [msaConflict],
     queries: [queryExecution],
     apiKeys: [apiKey],
     preferences,

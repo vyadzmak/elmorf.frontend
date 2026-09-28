@@ -5,9 +5,11 @@ const app = "http://localhost:3002";
 
 test("landing, try, and locale stay on the public site", async ({ page }) => {
   await page.goto(`${site}/`);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Compile messy data");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Turn your data");
+  await page.getByRole("button", { name: "Accept" }).click();
+  await expect(page.getByRole("heading", { name: "Cookies" })).toHaveCount(0);
 
-  await page.getByRole("link", { name: "Try Elmorf" }).first().click();
+  await page.getByRole("link", { name: "Explore demo" }).first().click();
   await expect(page).toHaveURL(/\/try$/);
   await expect(page.getByText("harbor-pine-master-services.pdf")).toBeVisible();
   await page.getByRole("button", { name: "INV-2041" }).click();
@@ -17,12 +19,14 @@ test("landing, try, and locale stay on the public site", async ({ page }) => {
   await expect(page.getByRole("dialog")).toHaveCount(0);
 
   await page.goto(`${site}/ru`);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Соберите разрозненные данные");
-  await page.getByRole("radio", { name: "Светлая" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Превратите данные");
+  await page.getByRole("button", { name: "Тема" }).click();
+  await page.getByRole("menuitemradio", { name: "Светлая" }).click();
   await expect(page.locator("html")).toHaveClass(/light/);
   await page.reload();
   await expect(page.locator("html")).toHaveClass(/light/);
-  await page.getByRole("radio", { name: "Тёмная" }).click();
+  await page.getByRole("button", { name: "Тема" }).click();
+  await page.getByRole("menuitemradio", { name: "Тёмная" }).click();
   await expect(page.locator("html")).toHaveClass(/dark/);
 });
 

@@ -1,273 +1,213 @@
 import { Button } from "@elmorf/ui/components/ui/button";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { SdkDemo } from "@/components/landing/sdk-demo";
-import { ProductVisual } from "@/components/landing/product-visual";
-import { appSignInHref } from "@/lib/app-link";
+import { CompilationBoard } from "@/components/landing/compilation-board";
+import { HeroVisual } from "@/components/landing/hero-visual";
+import { LlmSketch } from "@/components/landing/llm-sketch";
+import { ModelExplorer } from "@/components/landing/model-explorer";
 
-const useCases = [
-  ["useCaseContractsTitle", "useCaseContractsBody", "useCaseContractsExample", "obj_msa_1842"],
-  ["useCaseProductsTitle", "useCaseProductsBody", "useCaseProductsExample", "obj_brass_valve"],
-  ["useCaseReconcileTitle", "useCaseReconcileBody", "useCaseReconcileExample", "obj_inv_2041"],
-] as const;
+const h2 =
+  "max-w-3xl text-[clamp(1.875rem,3.2vw,3rem)] font-medium leading-[1.05] tracking-[-0.035em] text-balance";
+const copy = "text-base leading-[1.55] text-foreground/80";
 
 export async function LandingPage() {
   const t = await getTranslations("Landing");
-  const locale = await getLocale();
-  const signIn = appSignInHref(locale);
-  const roles = [
-    t("sourceRoleContract"),
-    t("sourceRoleRegistry"),
-    t("sourceRolePrice"),
-    t("sourceRoleAnnex"),
-    t("sourceRoleArchive"),
+  const traditional = [
+    t("schemaStepSchema"),
+    t("schemaEntities"),
+    t("schemaRelationships"),
+    t("schemaMappings"),
+    t("schemaStepData"),
+    t("schemaModel"),
   ];
+  const elmorf = [t("schemaStepData"), "compile()", t("schemaModel")];
+  const cases = [
+    { title: "useCaseReconcileTitle", body: "useCaseReconcileBody", example: "useCaseReconcileOut" },
+    { title: "useCaseContractsTitle", body: "useCaseContractsBody", example: "useCaseContractsOut" },
+    { title: "useCaseProductsTitle", body: "useCaseProductsBody", example: "useCaseProductsOut" },
+    { title: "useCaseAiTitle", body: "useCaseAiBody", example: "useCaseAiOut" },
+  ] as const;
 
   return (
     <>
-      <section className="grid min-h-[calc(100svh-4rem)] items-center gap-12 py-14 lg:grid-cols-[minmax(0,.95fr)_minmax(32rem,1.05fr)] lg:py-20">
-        <div className="flex flex-col gap-7">
-          <p className="w-fit rounded-full border border-border px-3 py-1 text-xs font-medium text-foreground">
-            {t("eyebrow")}
-          </p>
-          <h1 className="max-w-2xl text-[2.625rem] font-medium leading-[1.02] tracking-[-0.04em] text-balance sm:text-6xl">
+      <section className="grid items-center gap-10 py-12 xl:grid-cols-[minmax(0,0.48fr)_minmax(0,0.52fr)] xl:gap-12 xl:py-16">
+        <div className="flex flex-col gap-5">
+          <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-primary">{t("heroEyebrow")}</p>
+          <h1 className="max-w-xl text-[clamp(2.4rem,4.6vw,3.75rem)] font-medium leading-[0.98] tracking-[-0.045em] text-balance">
             {t("headlineLead")}
-            <span className="mt-2 block text-muted-foreground">{t("headlineTail")}</span>
+            <span className="mt-1 block">{t("headlineMid")}</span>
           </h1>
-          <p className="max-w-xl text-lg leading-8 text-foreground/75">{t("support")}</p>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button asChild className="h-11 w-full px-5 sm:w-auto">
-              <Link href="/try">{t("openCorpus")}</Link>
-            </Button>
-            <Button variant="ghost" asChild className="h-11 w-full px-5 sm:w-auto">
-              <a href="#demo">{t("seeDemo")}</a>
-            </Button>
-          </div>
-          <dl className="grid max-w-xl grid-cols-3 gap-px overflow-hidden rounded-lg border border-border bg-border">
-            <HeroFact value={t("heroFormatsValue")} label={t("heroFormatsLabel")} />
-            <HeroFact value={t("heroObjectsValue")} label={t("heroObjectsLabel")} />
-            <HeroFact value={t("heroEvidenceValue")} label={t("heroEvidenceLabel")} />
-          </dl>
-        </div>
-        <div className="relative">
-          <ProductVisual
-            step="get"
-            className="min-h-[30rem] p-5 sm:min-h-[34rem] sm:p-6"
-            sourcesLabel={t("sourcesLabel")}
-            sources={[]}
-            sourceRoles={roles}
-            modelLabel={t("exampleName")}
-            counts={t("compiledCounts")}
-            awaiting={t("awaitingModel")}
-            resultLabel={t("resultLabel")}
-            result={t("resultValue")}
-            fictional={t("fictional")}
-          />
-          <div className="absolute -bottom-5 start-4 end-4 rounded-lg border border-border bg-background p-4 sm:start-auto sm:end-6 sm:w-80">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="size-1.5 rounded-full bg-primary" aria-hidden />
-              {t("heroEvidenceSource")}
-            </div>
-            <p className="mt-2 font-mono text-sm">{t("heroEvidenceExcerpt")}</p>
-          </div>
-        </div>
-      </section>
-
-      <section id="product" className="py-20 lg:py-28">
-        <div className="mb-10 grid gap-6 lg:grid-cols-[minmax(0,.7fr)_minmax(0,1.3fr)]">
-          <p className="text-sm font-medium text-muted-foreground">{t("transformationEyebrow")}</p>
-          <div>
-            <h2 className="max-w-3xl text-3xl font-medium tracking-tight text-balance sm:text-5xl">
-              {t("transformationTitle")}
-            </h2>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
-              {t("transformationBody")}
-            </p>
-          </div>
-        </div>
-        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] overflow-hidden rounded-xl border border-border bg-border lg:grid-cols-[minmax(0,.8fr)_4rem_minmax(0,1.2fr)] lg:gap-px">
-          <div className="min-w-0 bg-[var(--elmorf-surface-1)] p-5 sm:p-7">
-            <p className="mb-5 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              {t("beforeTitle")}
-            </p>
-            <ul className="grid gap-2">
-              {t("sourceList").split("\n").map((name, index) => (
-                <li
-                  key={name}
-                  className="flex items-center justify-between gap-4 rounded-lg border border-border bg-background px-3 py-3"
-                >
-                  <span className="flex min-w-0 items-center gap-3">
-                    <span className="h-4 w-3 shrink-0 rounded-sm border border-border" aria-hidden />
-                    <span className="truncate font-mono text-xs">{name}</span>
-                  </span>
-                  <span className="shrink-0 text-xs text-muted-foreground">{roles[index]}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="hidden items-center justify-center bg-[var(--elmorf-surface-2)] lg:flex">
-            <span className="text-xl text-primary" aria-hidden>→</span>
-          </div>
-          <div className="min-w-0 bg-[var(--elmorf-surface-1)] p-5 sm:p-7">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                {t("afterTitle")}
-              </p>
-              <span className="rounded-full bg-muted px-2.5 py-1 text-xs">
-                {t("modelReady")}
-              </span>
-            </div>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <ModelFact label={t("modelFactIdentity")} value="Harbor & Pine Supplies" />
-              <ModelFact label={t("modelFactContract")} value="MSA-1842" />
-              <ModelFact label={t("modelFactInvoice")} value="INV-2041 · open" />
-              <ModelFact label={t("modelFactEvidence")} value="pricing-2026.xlsx" />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="grid gap-10 py-20 lg:grid-cols-[minmax(0,.78fr)_minmax(0,1.22fr)] lg:items-start lg:py-28">
-        <div className="lg:sticky lg:top-24">
-          <p className="text-sm font-medium text-muted-foreground">{t("proofEyebrow")}</p>
-          <h2 className="mt-4 max-w-lg text-3xl font-medium tracking-tight text-balance sm:text-5xl">
-            {t("proofTitle")}
-          </h2>
-          <p className="mt-5 max-w-lg text-base leading-7 text-muted-foreground">{t("proofBody")}</p>
-          <Button asChild variant="outline" className="mt-7 h-10">
-            <Link href={{ pathname: "/try", query: { object: "obj_inv_2041" } }}>
-              {t("proofAction")}
-            </Link>
+          <p className={`max-w-lg ${copy}`}>{t("support")}</p>
+          <p className="max-w-lg text-base font-medium leading-[1.5]">{t("heroNoSchema")}</p>
+          <p className="text-2xl font-medium leading-tight tracking-tight">
+            {t("heroPunchLead")}
+            <span className="mt-1 block text-primary">{t("heroPunchTail")}</span>
+          </p>
+          <Button asChild className="h-11 w-full px-5 sm:w-fit">
+            <Link href="/try">{t("openCorpus")}</Link>
           </Button>
         </div>
-        <div className="overflow-hidden rounded-xl border border-border">
-          <div className="border-b border-border bg-[var(--elmorf-surface-1)] p-5 sm:p-6">
-            <p className="text-xs text-muted-foreground">{t("proofQueryLabel")}</p>
-            <p className="mt-2 font-mono text-base">open invoices</p>
-          </div>
-          <div className="grid gap-px bg-border sm:grid-cols-2">
-            <ProofPanel label={t("proofAnswerLabel")}>
-              <p className="text-2xl font-medium">INV-2041</p>
-              <p className="mt-1 text-sm text-muted-foreground">{t("proofAnswerValue")}</p>
-              <p className="mt-5 text-xs text-muted-foreground">{t("proofRelation")}</p>
-            </ProofPanel>
-            <ProofPanel label={t("proofEvidenceLabel")}>
-              <p className="font-mono text-xs text-muted-foreground">pricing-2026.xlsx</p>
-              <p className="mt-3 font-mono text-sm">{t("heroEvidenceExcerpt")}</p>
-              <p className="mt-5 text-xs text-muted-foreground">{t("proofTrace")}</p>
-            </ProofPanel>
-          </div>
+        <HeroVisual
+          sourcesLabel={t("sourcesLabel")}
+          modelLabel={t("heroModelLabel")}
+          compileLabel="compile()"
+          inputs={[
+            t("heroInputDocuments"),
+            t("heroInputTables"),
+            t("heroInputRecords"),
+            t("heroInputApplication"),
+          ]}
+          outputs={[
+            t("heroOutputVendor"),
+            t("heroOutputContract"),
+            t("heroOutputInvoice"),
+            t("heroOutputRelations"),
+            t("heroOutputEvidence"),
+          ]}
+        />
+      </section>
+
+      <section className="scroll-mt-24 py-12 lg:py-16">
+        <h2 className={h2}>{t("schemaTitle")}</h2>
+        <p className={`mt-3 max-w-xl ${copy}`}>{t("schemaBody")}</p>
+        <div className="mt-8 flex flex-col gap-7">
+          <Path label={t("schemaTraditional")} steps={traditional} quiet />
+          <Path label={t("schemaElmorf")} steps={elmorf} quiet={false} />
+        </div>
+        <p className="mt-8 max-w-3xl text-[clamp(1.75rem,3vw,2.5rem)] font-medium leading-[1.1] tracking-[-0.03em]">
+          {t("schemaPunchLead")}
+          <span className="mt-1 block text-primary">{t("schemaPunchTail")}</span>
+        </p>
+      </section>
+
+      <section id="output" className="scroll-mt-24 py-16 lg:py-20">
+        <h2 className={h2}>{t("outputTitle")}</h2>
+        <p className="mt-3 font-mono text-[12px] tracking-[0.04em] text-muted-foreground">{t("outputStructure")}</p>
+        <div className="mt-6">
+          <ModelExplorer />
         </div>
       </section>
 
-      <SdkDemo
-        title={t("demoTitle")}
-        body={t("demoBody")}
-        hint={t("demoHint")}
-        exampleName={t("exampleName")}
-        install={t("install")}
-        snippet={t("snippet")}
-        sourcesLabel={t("sourcesLabel")}
-        sourceList={t("sourceList")}
-        sourceRoles={roles}
-        compiledCounts={t("compiledCounts")}
-        awaitingModel={t("awaitingModel")}
-        resultLabel={t("resultLabel")}
-        resultValue={t("resultValue")}
-        copyLabel={t("copy")}
-        copiedLabel={t("copied")}
-        copyErrorLabel={t("copyError")}
-        codeLabel={t("codeLabel")}
-        fictional={t("fictional")}
-        pipeline={[
-          { index: "1", title: t("loadTitle"), body: t("loadBody") },
-          { index: "2", title: t("compileTitle"), body: t("compileBody") },
-          { index: "3", title: t("getTitle"), body: t("getBody") },
-        ]}
-      />
-      <section className="py-20 lg:py-28">
-        <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">{t("useCasesEyebrow")}</p>
-            <h2 className="mt-3 text-3xl font-medium tracking-tight sm:text-4xl">{t("useCasesTitle")}</h2>
-          </div>
-          <p className="max-w-lg text-sm leading-6 text-muted-foreground">{t("useCasesBody")}</p>
-        </div>
-        <ul className="grid gap-px overflow-hidden rounded-xl border border-border bg-border lg:grid-cols-3">
-          {useCases.map(([titleKey, bodyKey, exampleKey, objectId]) => (
-            <li key={titleKey} className="h-full">
-              <Link
-                href={{ pathname: "/try", query: { object: objectId } }}
-                className="group flex h-full min-h-56 flex-col bg-background p-6 transition-colors duration-150 hover:bg-muted/50"
-              >
-                <p className="font-mono text-xs text-muted-foreground">{t(exampleKey)}</p>
-                <h3 className="mt-8 text-xl font-medium">{t(titleKey)}</h3>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">{t(bodyKey)}</p>
-                <span className="mt-auto text-base transition-transform duration-150 group-hover:translate-x-1" aria-hidden>
-                  →
-                </span>
-              </Link>
+      <section id="use-cases" className="scroll-mt-24 py-16 lg:py-20">
+        <h2 className={h2}>{t("useCasesTitle")}</h2>
+        <ul className="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
+          {cases.map((item) => (
+            <li key={item.title}>
+              <h3 className="text-base font-medium tracking-tight">{t(item.title)}</h3>
+              <p className={`mt-2 ${copy}`}>{t(item.body)}</p>
+              <p className="mt-3 font-mono text-[12px] leading-5 text-muted-foreground">{t(item.example)}</p>
             </li>
           ))}
         </ul>
       </section>
 
-      <section
-        id="try"
-        className="mb-16 grid gap-8 rounded-xl border border-border bg-[var(--elmorf-surface-1)] p-6 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-end"
-      >
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">{t("finalEyebrow")}</p>
-          <h2 className="mt-4 max-w-3xl text-3xl font-medium tracking-tight text-balance sm:text-5xl">
-            {t("tryTitle")}
-          </h2>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">{t("tryBody")}</p>
+      <section id="how-it-works" className="scroll-mt-24 py-16 lg:py-24">
+        <h2 className={h2}>{t("compileQuestion")}</h2>
+        <p className={`mt-3 max-w-xl ${copy}`}>{t("compileLead")}</p>
+        <div className="mt-8">
+          <CompilationBoard
+            sameObjectLabel={t("compileSameObject")}
+            sameFieldLabel={t("compileSameField")}
+            joinedLabel={t("compileJoined")}
+            keptLabel={t("compileKept")}
+            unresolvedLabel={t("compileUnresolved")}
+            conflictTitle={t("compileConflictsTitle")}
+            companyLabel={t("modelKindCompany")}
+            contractLabel={t("modelKindContract")}
+          />
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-          <Button asChild className="h-11 w-full px-5 lg:w-auto">
+        <p className="mt-4 font-mono text-[12px] text-muted-foreground">{t("compileFacets")}</p>
+        <p className={`mt-2 max-w-xl ${copy}`}>{t("observationsLine")}</p>
+
+        <div className="mt-8 border-t border-border pt-6">
+          <h3 className="max-w-3xl text-xl font-medium tracking-tight">{t("llmTitle")}</h3>
+          <p className={`mt-2 max-w-xl ${copy}`}>{t("llmBody")}</p>
+          <LlmSketch
+            llmLabel={t("llmExtract")}
+            elmorfLabel={t("llmKeeps")}
+            documentLabel={t("llmDocument")}
+            promptLabel={t("llmPrompt")}
+            structureLabel={t("llmStructure")}
+            observationsLabel={t("compileObservations")}
+          />
+        </div>
+      </section>
+
+      <section id="sdk" className="scroll-mt-24 py-16 lg:py-24">
+        <h2 className={h2}>{t("codeTitle")}</h2>
+        <div className="mt-6 max-w-xl overflow-hidden rounded-xl border border-border bg-[var(--elmorf-surface-1)]">
+          <p className="border-b border-border px-5 py-4 font-mono text-lg">{t("install")}</p>
+          <pre className="overflow-x-auto px-5 py-5 font-mono text-[15px] leading-8">
+            <code>
+              <span className="text-muted-foreground">{"import elmorf\n\nproject = \"prj_vendor_contracts\"\n"}</span>
+              <span className="text-primary">elmorf.load</span>
+              <span className="text-muted-foreground">{"(project=project)\n"}</span>
+              <span className="text-primary">elmorf.compile</span>
+              <span className="text-muted-foreground">{"(project=project)\n"}</span>
+              {"result = "}
+              <span className="text-primary">elmorf.get</span>
+              <span className="text-muted-foreground">
+                {"(\n    project=project,\n    model=\"v7\",\n    query=\"open invoices\",\n)\n# INV-2041 · open"}
+              </span>
+            </code>
+          </pre>
+        </div>
+      </section>
+
+      <section className="mb-6 grid items-end gap-10 py-16 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:py-24">
+        <div>
+          <h2 className={h2}>{t("finalTitleLead")}</h2>
+          <p className={`mt-3 max-w-xl ${copy}`}>{t("finalBody")}</p>
+          <Button asChild className="mt-6 h-11 w-full px-5 sm:w-fit">
             <Link href="/try">{t("openCorpus")}</Link>
           </Button>
-          <Button variant="ghost" asChild className="h-11 w-full px-5 lg:w-auto">
-            <a href={signIn}>{t("signInDemo")}</a>
-          </Button>
         </div>
+        <FinalModel keptLabel={t("compileKept")} unresolvedLabel={t("compileUnresolved")} />
       </section>
     </>
   );
 }
 
-function HeroFact({ value, label }: { value: string; label: string }) {
+function FinalModel({ keptLabel, unresolvedLabel }: { keptLabel: string; unresolvedLabel: string }) {
   return (
-    <div className="bg-background px-3 py-3">
-      <dt className="text-sm font-medium">{value}</dt>
-      <dd className="mt-0.5 text-xs text-muted-foreground">{label}</dd>
-    </div>
-  );
-}
-
-function ModelFact({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-lg border border-border bg-background p-4">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span className="size-1.5 rounded-full bg-primary" aria-hidden />
-        {label}
+    <div className="border-t border-border pt-4 lg:border-t-0 lg:border-s lg:pt-0 lg:ps-8">
+      <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-muted-foreground">v7</p>
+      <p className="mt-3 text-[clamp(1.5rem,2vw,2rem)] font-medium tracking-tight">MSA-1842</p>
+      <p className="mt-1 font-mono text-[12px] text-muted-foreground">effective</p>
+      <div className="mt-3 flex max-w-sm flex-col gap-1.5 text-sm">
+        <p className="flex items-baseline justify-between gap-6">
+          <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">{keptLabel}</span>
+          <span className="font-medium whitespace-nowrap">2024-04-01</span>
+        </p>
+        <p className="flex items-baseline justify-between gap-6 border-t border-dashed border-primary pt-1.5">
+          <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-primary">{unresolvedLabel}</span>
+          <span className="font-medium text-muted-foreground" aria-hidden>
+            —
+          </span>
+        </p>
       </div>
-      <p className="mt-3 truncate text-sm font-medium">{value}</p>
+      <p className="mt-3 font-mono text-[12px] text-muted-foreground">harbor-pine-master-services.pdf</p>
+      <p className="font-mono text-[12px] text-muted-foreground">annex-b.docx</p>
     </div>
   );
 }
 
-function ProofPanel({ label, children }: { label: string; children: React.ReactNode }) {
+function Path({ label, steps, quiet }: { label: string; steps: string[]; quiet: boolean }) {
   return (
-    <div className="min-h-60 bg-background p-5 sm:p-6">
-      <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
-      <div className="mt-8">{children}</div>
+    <div>
+      <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
+      <p className={`mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-2 ${quiet ? "text-base text-muted-foreground" : "text-xl"}`}>
+        {steps.map((step, index) => (
+          <span key={`${step}-${index}`} className="inline-flex items-center gap-2.5">
+            {index > 0 ? (
+              <span className={quiet ? "text-muted-foreground/70" : "text-primary"} aria-hidden>
+                →
+              </span>
+            ) : null}
+            <span className={!quiet && step === "compile()" ? "font-mono text-primary" : undefined}>{step}</span>
+          </span>
+        ))}
+      </p>
     </div>
   );
 }

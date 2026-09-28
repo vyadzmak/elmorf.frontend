@@ -10,31 +10,51 @@ import {
 } from "@elmorf/domain";
 import type { MockDataset } from "./dataset";
 
-const coreEvidence: Record<string, { sourceId: string; excerpt: string }> = {
-  obj_harbor_pine: {
-    sourceId: "src_vendor_csv",
-    excerpt: "Harbor & Pine Supplies, vendor, role vendor.",
-  },
-  obj_ada_lang: {
-    sourceId: "src_msa_pdf",
-    excerpt: "Ada Lang, procurement lead, appears as the signing party.",
-  },
-  obj_msa_1842: {
-    sourceId: "src_msa_pdf",
-    excerpt: "Master services agreement MSA-1842, effective 2024-04-01.",
-  },
-  obj_inv_2041: {
-    sourceId: "src_pricing_xlsx",
-    excerpt: "Invoice INV-2041, currency USD.",
-  },
-  obj_cedar_wharf: {
-    sourceId: "src_vendor_csv",
-    excerpt: "Registered address 18 Cedar Wharf, Port Meridian.",
-  },
-  obj_brass_valve: {
-    sourceId: "src_pricing_xlsx",
-    excerpt: "Brass Valve 12mm, sku BV-12.",
-  },
+const coreEvidence: Record<string, { sourceId: string; excerpt: string }[]> = {
+  obj_harbor_pine: [
+    {
+      sourceId: "src_vendor_csv",
+      excerpt: "Harbor & Pine Supplies, vendor, role vendor.",
+    },
+    {
+      sourceId: "src_msa_pdf",
+      excerpt: "Supplier named Harbor & Pine.",
+    },
+  ],
+  obj_ada_lang: [
+    {
+      sourceId: "src_msa_pdf",
+      excerpt: "Ada Lang, procurement lead, appears as the signing party.",
+    },
+  ],
+  obj_msa_1842: [
+    {
+      sourceId: "src_msa_pdf",
+      excerpt: "Master services agreement MSA-1842, effective 2024-04-01.",
+    },
+    {
+      sourceId: "src_annex_docx",
+      excerpt: "Annex B records a second effective date for MSA-1842.",
+    },
+  ],
+  obj_inv_2041: [
+    {
+      sourceId: "src_pricing_xlsx",
+      excerpt: "Invoice INV-2041, currency USD.",
+    },
+  ],
+  obj_cedar_wharf: [
+    {
+      sourceId: "src_vendor_csv",
+      excerpt: "Registered address 18 Cedar Wharf, Port Meridian.",
+    },
+  ],
+  obj_brass_valve: [
+    {
+      sourceId: "src_pricing_xlsx",
+      excerpt: "Brass Valve 12mm, sku BV-12.",
+    },
+  ],
 };
 
 function sourceLabel(dataset: MockDataset, sourceId: string): string {
@@ -42,16 +62,20 @@ function sourceLabel(dataset: MockDataset, sourceId: string): string {
 }
 
 export function evidenceForObject(dataset: MockDataset, object: CompiledObject): Evidence[] {
-  const preset = coreEvidence[object.id];
-  const sourceId = preset?.sourceId ?? dataset.sources[0]?.id ?? "src_vendor_csv";
-  return [
-    EvidenceSchema.parse({
-      id: `ev_${object.id}`,
-      sourceId,
-      label: sourceLabel(dataset, sourceId),
-      excerpt: preset?.excerpt ?? `${object.label} is listed in the compiled vendor records.`,
-    }),
+  const presets = coreEvidence[object.id] ?? [
+    {
+      sourceId: dataset.sources[0]?.id ?? "src_vendor_csv",
+      excerpt: `${object.label} is listed in the compiled vendor records.`,
+    },
   ];
+  return presets.map((preset, index) =>
+    EvidenceSchema.parse({
+      id: index === 0 ? `ev_${object.id}` : `ev_${object.id}_${index}`,
+      sourceId: preset.sourceId,
+      label: sourceLabel(dataset, preset.sourceId),
+      excerpt: preset.excerpt,
+    }),
+  );
 }
 
 export function objectDetail(dataset: MockDataset, projectId: string, objectId: string): ObjectDetail | null {
@@ -97,7 +121,8 @@ function evidenceForRelation(
   sourceLabelText: string,
   targetLabelText: string,
 ): Evidence[] {
-  const sourceId = coreEvidence[relation.sourceObjectId]?.sourceId ?? dataset.sources[0]?.id ?? "src_msa_pdf";
+  const sourceId =
+    coreEvidence[relation.sourceObjectId]?.[0]?.sourceId ?? dataset.sources[0]?.id ?? "src_msa_pdf";
   return [
     EvidenceSchema.parse({
       id: `ev_${relation.id}`,

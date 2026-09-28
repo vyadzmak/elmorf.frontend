@@ -319,6 +319,16 @@ export function TryWorkbench({
                   </article>
                 ))
               : null}
+            {object.isSuccess && object.data.conflicts.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                <h3 className="text-sm font-medium">{t("conflictsTitle")}</h3>
+                {object.data.conflicts.map((conflict) => (
+                  <p key={conflict.id} className="text-sm">
+                    {conflict.summary}
+                  </p>
+                ))}
+              </div>
+            ) : null}
           </div>
         </section>
         </div>

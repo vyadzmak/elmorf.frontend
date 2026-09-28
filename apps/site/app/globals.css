@@ -2,3 +2,76 @@
 
 @source "../**/*.{ts,tsx}";
 @source "../../../packages/ui/src/**/*.{ts,tsx}";
+
+@keyframes elmorf-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes elmorf-line {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes elmorf-pulse {
+  0%,
+  100% {
+    border-color: var(--border);
+  }
+
+  40% {
+    border-color: var(--primary);
+  }
+}
+
+.elmorf-seq {
+  animation: elmorf-rise 640ms both;
+}
+
+.elmorf-line {
+  transform-origin: left center;
+  animation: elmorf-line 700ms both;
+}
+
+.elmorf-pulse {
+  animation: elmorf-pulse 1.6s ease-in-out 900ms 1 both;
+}
+
+@keyframes elmorf-merge {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.elmorf-merge {
+  animation: elmorf-merge 680ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .elmorf-seq,
+  .elmorf-line,
+  .elmorf-pulse,
+  .elmorf-merge {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -23,5 +23,23 @@ export default function sitemap(): MetadataRoute.Sitemap {
         },
       },
     },
+    {
+      url: `${site}/privacy`,
+      alternates: {
+        languages: {
+          en: `${site}/privacy`,
+          ru: `${site}/ru/privacy`,
+        },
+      },
+    },
+    {
+      url: `${site}/terms`,
+      alternates: {
+        languages: {
+          en: `${site}/terms`,
+          ru: `${site}/ru/terms`,
+        },
+      },
+    },
   ];
 }
